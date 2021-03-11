@@ -1,3 +1,5 @@
 .DS_Store
 classifier*
 _*.tmp.npy
+__pycache__*
+__pycache__
