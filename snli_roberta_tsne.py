@@ -44,8 +44,8 @@ class lazydict():
         self.indict[key].append(val)
 
 
-def load_sentences_str():
-        lines = open(registered_path["snli_dev"]).readlines()
+def load_sentences_str(registered_path, partition):
+        lines = open(registered_path[partition]).readlines()
         #random.shuffle(lines)
         n = len(lines)
         eval_dataset = map(lambda line: json.loads(line), lines)
@@ -164,7 +164,7 @@ def main(snlipath, modelpath, outpath, partition, debug, hides2, perp, cuda):
 
     print("")
 
-    sents = load_sentences_str()
+    sents = load_sentences_str(registered_path, f"snli_{partition}")
 
     sents_l = []
 

@@ -1,6 +1,11 @@
 """
-CUDA_VISIBLE_DEVICES=0 python dataset.py --cuda \
---snlipath /mnt/hdd/saxon/snli_1.0/ \
+CUDA_VISIBLE_DEVICES=0 python anli_roberta_tsne.py --cuda \
+--anlipath /mnt/hdd/saxon/anli_v1.0/ --r 1 \
+--modelpath /mnt/hdd/saxon/roberta-nli/weights/roberta_nli/ \
+--outpath /mnt/hdd/saxon/roberta-nli/
+
+python anli_roberta_tsne.py \
+--anlipath /mnt/hdd/saxon/anli_v1.0/ --r 1 \
 --modelpath /mnt/hdd/saxon/roberta-nli/weights/roberta_nli/ \
 --outpath /mnt/hdd/saxon/roberta-nli/
 
@@ -26,13 +31,18 @@ import json
 
 import matplotlib.pyplot as plt
 
-SNLI_PATH = "/Users/mssaxon/data/snli_1.0/"
+ANLI_PATH = "/Users/mssaxon/data/anli_v1.0/"
 MODEL_PATH = '/Users/mssaxon/Documents/github/DatasetAnalysis/classifier/weights/roberta_nli'
 
 # tab separated gold_label s1bp s2bp s1p s2p s1 s2 captionID pairID label1 label2 label3 label4 label5
 
 # generate sentensewise pair matrix
 
+FULL_LABEL_MAP = {
+    "e" : "entailment",
+    "c" : "contradiction",
+    "n" : "neutral"
+}
 
 class lazydict():
     def __init__(self):
@@ -44,8 +54,8 @@ class lazydict():
         self.indict[key].append(val)
 
 
-def load_sentences_str():
-        lines = open(registered_path["snli_dev"]).readlines()
+def load_sentences_str(registered_path, partition):
+        lines = open(registered_path[partition]).readlines()
         #random.shuffle(lines)
         n = len(lines)
         eval_dataset = map(lambda line: json.loads(line), lines)
@@ -53,11 +63,9 @@ def load_sentences_str():
         sents = lazydict()
 
         for i, line in enumerate(eval_dataset):
-            lst = list(line["annotator_labels"])
-            label = max(set(lst), key=lst.count)
-            #label = line["gold_label"]
-            s1 = line["sentence1"] 
-            s2 = line["sentence2"]
+            label = FULL_LABEL_MAP[line["label"]]
+            s1 = line["context"] 
+            s2 = line["hypothesis"]
             #print(label + "," + eval_sent)
             sents.add(label, (s1, s2))
             # get the embedding
@@ -68,27 +76,29 @@ def load_sentences_str():
 
 
 @click.command()
-@click.option('--snlipath', default=SNLI_PATH)
+@click.option('--anlipath', default=ANLI_PATH)
 @click.option('--modelpath', default=MODEL_PATH)
+@click.option('--r', default=1)
 @click.option('--outpath', default="")
 @click.option('--partition', default="train")
 @click.option('--debug', is_flag=True)
 @click.option('--hides2', is_flag=True)
 @click.option('--perp', default=30)
 @click.option('--cuda', is_flag=True)
-def main(snlipath, modelpath, outpath, partition, debug, hides2, perp, cuda):
+@click.option('--plot', is_flag=True)
+def main(anlipath, modelpath, r, outpath, partition, debug, hides2, perp, cuda, plot):
     registered_path = {
-        'snli_train': snlipath + "snli_1.0_" + "train.jsonl",
-        'snli_dev': snlipath + "snli_1.0_" + "dev.jsonl",
-        'snli_test': snlipath + "snli_1.0_" + "test.jsonl",
+        'train': anlipath + f"R{r}/" + "train.jsonl",
+        'dev': anlipath + f"R{r}/" + "dev.jsonl",
+        'test': anlipath + f"R{r}/" + "test.jsonl",
     }
 
 
     hides1 = not hides2
-    if os.path.exists(f"{outpath}_{partition}_X.tmp.npy"):
+    if os.path.exists(f"{outpath}_AR{r}_{partition}_X.tmp.npy"):
         print("Loading temporary x file")
-        X = np.load(f"{outpath}_{partition}_X.tmp.npy")
-        labels = list(np.load(f"{outpath}_{partition}_l.tmp.npy"))
+        X = np.load(f"{outpath}_AR{r}_{partition}_X.tmp.npy")
+        labels = list(np.load(f"{outpath}_AR{r}_{partition}_l.tmp.npy"))
     else:
         print("Loading model...")
         model = RobertaForSequenceClassification.from_pretrained(modelpath)
@@ -105,7 +115,7 @@ def main(snlipath, modelpath, outpath, partition, debug, hides2, perp, cuda):
             if param.requires_grad:
                 print(name)
         """
-        lines = open(registered_path[f"snli_{partition}"]).readlines()
+        lines = open(registered_path[partition]).readlines()
         #random.shuffle(lines)
         n = len(lines)
         eval_dataset = map(lambda line: json.loads(line), lines)
@@ -117,10 +127,9 @@ def main(snlipath, modelpath, outpath, partition, debug, hides2, perp, cuda):
         embs = lazydict()
 
         for i, line in enumerate(eval_dataset):
-            lst = list(line["annotator_labels"])
-            label = max(set(lst), key=lst.count)
-            s1 = line["sentence1"] 
-            s2 = line["sentence2"]
+            label = FULL_LABEL_MAP[line["label"]]
+            s1 = line["context"] 
+            s2 = line["hypothesis"]
             #print(label + "," + eval_sent)
             eval_sent = s1 + " </s> " + s2
             s1t = tok(s1, return_tensors="pt")
@@ -147,7 +156,7 @@ def main(snlipath, modelpath, outpath, partition, debug, hides2, perp, cuda):
             embs.add(label, emb)
             # get the embedding
             print(f"{i}/{n}", end="\r")
-            if debug and i > 10:
+            if debug and i > 100:
                 break
 
 
@@ -159,12 +168,12 @@ def main(snlipath, modelpath, outpath, partition, debug, hides2, perp, cuda):
             labels += [i] * len(embs.indict[key])
 
         X = np.stack(X_list)
-        np.save(f"{outpath}_{partition}_X.tmp", X)
-        np.save(f"{outpath}_{partition}_l.tmp", np.array(labels))
+        np.save(f"{outpath}_AR{r}_{partition}_X.tmp", X)
+        np.save(f"{outpath}_AR{r}_{partition}_l.tmp", np.array(labels))
 
     print("")
 
-    sents = load_sentences_str()
+    sents = load_sentences_str(registered_path, partition)
 
     sents_l = []
 
@@ -185,13 +194,13 @@ def main(snlipath, modelpath, outpath, partition, debug, hides2, perp, cuda):
         print(np.sum(labarray == i))
 
 
-    if os.path.exists(f"{outpath}_{partition}_T{perp}.tmp.npy"):
+    if os.path.exists(f"{outpath}_AR{r}_{partition}_T{perp}.tmp.npy"):
         print(f"Loading temporary tsne, perp={perp}")
-        X_tsne = np.load(f"{outpath}_{partition}_T{perp}.tmp.npy")
+        X_tsne = np.load(f"{outpath}_AR{r}_{partition}_T{perp}.tmp.npy")
     else:
         print(f"Fitting TSNE, perp={perp}...")
         X_tsne = TSNE(perplexity=perp).fit_transform(X)
-        np.save(f"{outpath}_{partition}_T{perp}.tmp", X_tsne)
+        np.save(f"{outpath}_AR{r}_{partition}_T{perp}.tmp", X_tsne)
 
     keys = list(sents.indict.keys())
     colors = {'contradiction':'red', 'neutral':'black', 'entailment':'green'}
@@ -237,11 +246,12 @@ def main(snlipath, modelpath, outpath, partition, debug, hides2, perp, cuda):
     print(bad_counts)
     """
     #plt.scatter(np.flip(X_tsne[:,0]), np.flip(X_tsne[:,1]), c=list(map(lambda x: colors[keys[x]], list(np.flip(np.array(labels))))))
-    #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=list(map(lambda x: colors[keys[x]], labels)))
-    #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=use_pt)
-    #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=lens_hyps)
-    #plt.plot([-1.265,-0.465,-1.457],[-1.938,-0.194,1.867])
-    #plt.show()
+    if plot:
+        plt.scatter(X_tsne[:,0], X_tsne[:,1], c=list(map(lambda x: colors[keys[x]], labels)))
+        #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=use_pt)
+        #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=lens_hyps)
+        #plt.plot([-1.265,-0.465,-1.457],[-1.938,-0.194,1.867])
+        plt.show()
     #plt.
 
 
