@@ -1,13 +1,8 @@
 """
-CUDA_VISIBLE_DEVICES=2 python anli_roberta_tsne.py --cuda \
---anlipath /mnt/hdd/saxon/anli_v1.0/  \
+CUDA_VISIBLE_DEVICES=0 python dataset.py --cuda \
+--snlipath /mnt/hdd/saxon/snli_1.0/ \
 --modelpath /mnt/hdd/saxon/roberta-nli/weights/roberta_nli/ \
---outpath /mnt/hdd/saxon/roberta-nli/ --r 3
-
-python anli_roberta_tsne.py \
---anlipath /mnt/hdd/saxon/anli_v1.0/ \
---modelpath /mnt/hdd/saxon/roberta-nli/weights/roberta_nli/ \
---outpath /mnt/hdd/saxon/roberta-nli/ --r 3
+--outpath /mnt/hdd/saxon/roberta-nli/
 
 """
 
@@ -22,6 +17,7 @@ from transformers import RobertaTokenizer, RobertaForSequenceClassification
 import torch.nn.functional as F
 
 from sklearn.manifold import TSNE
+from sklearn.cluster import KMeans
 
 import math
 import random
@@ -31,18 +27,13 @@ import json
 
 import matplotlib.pyplot as plt
 
-ANLI_PATH = "/Users/mssaxon/data/anli_v1.0/"
+SNLI_PATH = "/Users/mssaxon/data/snli_1.0/"
 MODEL_PATH = '/Users/mssaxon/Documents/github/DatasetAnalysis/classifier/weights/roberta_nli'
 
 # tab separated gold_label s1bp s2bp s1p s2p s1 s2 captionID pairID label1 label2 label3 label4 label5
 
 # generate sentensewise pair matrix
 
-FULL_LABEL_MAP = {
-    "e" : "entailment",
-    "c" : "contradiction",
-    "n" : "neutral"
-}
 
 class lazydict():
     def __init__(self):
@@ -63,9 +54,11 @@ def load_sentences_str(registered_path, partition):
         sents = lazydict()
 
         for i, line in enumerate(eval_dataset):
-            label = FULL_LABEL_MAP[line["label"]]
-            s1 = line["context"] 
-            s2 = line["hypothesis"]
+            lst = list(line["annotator_labels"])
+            label = max(set(lst), key=lst.count)
+            #label = line["gold_label"]
+            s1 = line["sentence1"] 
+            s2 = line["sentence2"]
             #print(label + "," + eval_sent)
             sents.add(label, (s1, s2))
             # get the embedding
@@ -76,9 +69,8 @@ def load_sentences_str(registered_path, partition):
 
 
 @click.command()
-@click.option('--anlipath', default=ANLI_PATH)
+@click.option('--snlipath', default=SNLI_PATH)
 @click.option('--modelpath', default=MODEL_PATH)
-@click.option('--r', default=1)
 @click.option('--outpath', default="")
 @click.option('--partition', default="train")
 @click.option('--debug', is_flag=True)
@@ -86,19 +78,22 @@ def load_sentences_str(registered_path, partition):
 @click.option('--perp', default=30)
 @click.option('--cuda', is_flag=True)
 @click.option('--plot', is_flag=True)
-def main(anlipath, modelpath, r, outpath, partition, debug, hides2, perp, cuda, plot):
+@click.option('--redo_tsne', is_flag=True)
+@click.option('--n_clusters', default=50)
+@click.option('--threshold', default=0.25)
+def main(snlipath, modelpath, outpath, partition, debug, hides2, perp, cuda, plot, redo_tsne, n_clusters, threshold):
     registered_path = {
-        'train': anlipath + f"R{r}/" + "train.jsonl",
-        'dev': anlipath + f"R{r}/" + "dev.jsonl",
-        'test': anlipath + f"R{r}/" + "test.jsonl",
+        'snli_train': snlipath + "snli_1.0_" + "train.jsonl",
+        'snli_dev': snlipath + "snli_1.0_" + "dev.jsonl",
+        'snli_test': snlipath + "snli_1.0_" + "test.jsonl",
     }
 
 
     hides1 = not hides2
-    if os.path.exists(f"{outpath}_AR{r}_{partition}_X.tmp.npy"):
+    if os.path.exists(f"{outpath}_S_{partition}_X.tmp.npy"):
         print("Loading temporary x file")
-        X = np.load(f"{outpath}_AR{r}_{partition}_X.tmp.npy")
-        labels = list(np.load(f"{outpath}_AR{r}_{partition}_l.tmp.npy"))
+        X = np.load(f"{outpath}_S_{partition}_X.tmp.npy")
+        labels = list(np.load(f"{outpath}_S_{partition}_l.tmp.npy"))
     else:
         print("Loading model...")
         model = RobertaForSequenceClassification.from_pretrained(modelpath)
@@ -115,7 +110,7 @@ def main(anlipath, modelpath, r, outpath, partition, debug, hides2, perp, cuda, 
             if param.requires_grad:
                 print(name)
         """
-        lines = open(registered_path[partition]).readlines()
+        lines = open(registered_path[f"snli_{partition}"]).readlines()
         #random.shuffle(lines)
         n = len(lines)
         eval_dataset = map(lambda line: json.loads(line), lines)
@@ -127,9 +122,10 @@ def main(anlipath, modelpath, r, outpath, partition, debug, hides2, perp, cuda, 
         embs = lazydict()
 
         for i, line in enumerate(eval_dataset):
-            label = FULL_LABEL_MAP[line["label"]]
-            s1 = line["context"] 
-            s2 = line["hypothesis"]
+            lst = list(line["annotator_labels"])
+            label = max(set(lst), key=lst.count)
+            s1 = line["sentence1"] 
+            s2 = line["sentence2"]
             #print(label + "," + eval_sent)
             eval_sent = s1 + " </s> " + s2
             s1t = tok(s1, return_tensors="pt")
@@ -156,7 +152,7 @@ def main(anlipath, modelpath, r, outpath, partition, debug, hides2, perp, cuda, 
             embs.add(label, emb)
             # get the embedding
             print(f"{i}/{n}", end="\r")
-            if debug and i > 100:
+            if debug and i > 10:
                 break
 
 
@@ -168,12 +164,12 @@ def main(anlipath, modelpath, r, outpath, partition, debug, hides2, perp, cuda, 
             labels += [i] * len(embs.indict[key])
 
         X = np.stack(X_list)
-        np.save(f"{outpath}_AR{r}_{partition}_X.tmp", X)
-        np.save(f"{outpath}_AR{r}_{partition}_l.tmp", np.array(labels))
+        np.save(f"{outpath}_S_{partition}_X.tmp", X)
+        np.save(f"{outpath}_S_{partition}_l.tmp", np.array(labels))
 
     print("")
 
-    sents = load_sentences_str(registered_path, partition)
+    sents = load_sentences_str(registered_path, f"snli_{partition}")
 
     sents_l = []
 
@@ -190,17 +186,26 @@ def main(anlipath, modelpath, r, outpath, partition, debug, hides2, perp, cuda, 
 
 
     labarray = np.array(labels)
+    global_balance = []
     for i in range(3):
-        print(np.sum(labarray == i))
+        num_this_label = np.sum(labarray == i)
+        print(num_this_label)
+        global_balance.append(num_this_label)
+
+    global_balance = np.array(global_balance)
+    global_balance = global_balance / np.sum(global_balance)
 
 
-    if os.path.exists(f"{outpath}_AR{r}_{partition}_T{perp}.tmp.npy"):
+    if os.path.exists(f"{outpath}_S_{partition}_T{perp}.tmp.npy") and not redo_tsne:
         print(f"Loading temporary tsne, perp={perp}")
-        X_tsne = np.load(f"{outpath}_AR{r}_{partition}_T{perp}.tmp.npy")
+        X_tsne = np.load(f"{outpath}_S_{partition}_T{perp}.tmp.npy")
     else:
         print(f"Fitting TSNE, perp={perp}...")
-        X_tsne = TSNE(perplexity=perp).fit_transform(X)
-        np.save(f"{outpath}_AR{r}_{partition}_T{perp}.tmp", X_tsne)
+        X_tsne = TSNE(perplexity=perp, verbose=2).fit_transform(X)
+        if redo_tsne:
+            np.save(f"{outpath}_S_{partition}_T{perp}r.tmp", X_tsne)
+        else:
+            np.save(f"{outpath}_S_{partition}_T{perp}.tmp", X_tsne)            
 
     keys = list(sents.indict.keys())
     colors = {'contradiction':'red', 'neutral':'black', 'entailment':'green'}
@@ -245,13 +250,93 @@ def main(anlipath, modelpath, r, outpath, partition, debug, hides2, perp, cuda, 
     print(use_counts)
     print(bad_counts)
     """
+
+
+    kms = KMeans(n_clusters=n_clusters).fit(X_tsne)
+
+    cluster_ids = kms.predict(X_tsne)
+
+    cluster_counts = [np.array([0,0,0]) for i in range(n_clusters)]
+
+    for i in range(cluster_ids.shape[0]):
+        cluster_counts[cluster_ids[i]][labarray[i]] += 1
+
+    print(global_balance)
+
+    imbalances = []
+
+    for i in range(n_clusters):
+        # check balance of this cluster
+        this_balance = np.array(cluster_counts[i]) / sum(cluster_counts[i])
+        #print(cluster_counts[i])
+        imbalance = this_balance - global_balance
+        imbalance = np.sqrt(np.sum(imbalance * imbalance))
+        #print(imbalance)
+        imbalances.append(imbalance)
+
+    imbalances = np.array(imbalances)
+
+    print(imbalances.max())
+    print(imbalances.mean())
+    print(imbalances.min())
+
+
+
+    # outlier is size of dataset, True if example is outlier (to be flipped) false else
+    outlier = list(map(lambda x: list(imbalances > threshold)[x], list(cluster_ids)))
+
+    outliers = []
+    regulars = []
+    print(len(keys))
+    print(len(outlier))
+    print(X_tsne.shape[0])
+    for i in range(len(outlier)):
+        if outlier[i]:
+            outliers.append((X_tsne[i,:], labels[i]))
+        else:
+            regulars.append((X_tsne[i,:], labels[i]))
+    # group by condition
+
     if plot:
-        plt.scatter(np.flip(X_tsne[:,0]), np.flip(X_tsne[:,1]), c=list(map(lambda x: colors[keys[x]], list(np.flip(np.array(labels))))))
-        #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=list(map(lambda x: colors[keys[x]], labels)))
+        #plt.scatter(np.flip(X_tsne[:,0]), np.flip(X_tsne[:,1]), c=list(map(lambda x: colors[keys[x]], list(np.flip(np.array(labels))))))
+        X_tsne, labels = zip(*outliers)
+        X_tsne = np.stack(X_tsne)
+        idces = list(range(len(labels)))
+        random.shuffle(idces)
+        idces = np.array(idces)
+        plt.scatter(X_tsne[idces,0], X_tsne[idces,1], c=list(map(lambda x: colors[keys[x]], list(np.array(labels)[idces]))), marker="x")
+        X_tsne, labels = zip(*regulars)
+        X_tsne = np.stack(X_tsne)
+        idces = list(range(len(labels)))
+        random.shuffle(idces)
+        idces = np.array(idces)
+        plt.scatter(X_tsne[:,0], X_tsne[:,1], c=list(map(lambda x: colors[keys[x]], list(np.array(labels)[idces]))), marker="x", s=1)
+        #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=cluster_ids)
         #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=use_pt)
         #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=lens_hyps)
         #plt.plot([-1.265,-0.465,-1.457],[-1.938,-0.194,1.867])
         plt.show()
+
+    if plot:    
+        cumulative_weird = []
+        cumulative_x = []
+        for i in range(n_clusters):
+            cumulative_weird.append(np.sum(imbalances > float(i) / n_clusters))
+            cumulative_x.append( float(i) / n_clusters )
+        plt.plot(cumulative_x, cumulative_weird)
+        plt.title("SNLI")
+        plt.xlabel("Threshold (L2 distance from global distribution of labels)")
+        plt.ylabel("No. Clusters exceeding Threshold")
+        plt.show()
+
+
+
+    #plt.scatter(np.flip(X_tsne[:,0]), np.flip(X_tsne[:,1]), c=list(map(lambda x: colors[keys[x]], list(np.flip(np.array(labels))))))
+    #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=list(map(lambda x: colors[keys[x]], labels)))
+    #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=use_pt)
+    #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=lens_hyps)
+    #plt.plot([-1.265,-0.465,-1.457],[-1.938,-0.194,1.867])
+    #plt.show()
     #plt.
 
 

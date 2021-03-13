@@ -22,6 +22,7 @@ from transformers import RobertaTokenizer, RobertaForSequenceClassification
 import torch.nn.functional as F
 
 from sklearn.manifold import TSNE
+from sklearn.cluster import KMeans
 
 import math
 import random
@@ -86,7 +87,9 @@ def load_sentences_str(registered_path, partition):
 @click.option('--perp', default=30)
 @click.option('--cuda', is_flag=True)
 @click.option('--plot', is_flag=True)
-def main(anlipath, modelpath, r, outpath, partition, debug, hides2, perp, cuda, plot):
+@click.option('--n_clusters', default=50)
+@click.option('--threshold', default=0.25)
+def main(anlipath, modelpath, r, outpath, partition, debug, hides2, perp, cuda, plot, n_clusters, threshold):
     registered_path = {
         'train': anlipath + f"R{r}/" + "train.jsonl",
         'dev': anlipath + f"R{r}/" + "dev.jsonl",
@@ -190,9 +193,14 @@ def main(anlipath, modelpath, r, outpath, partition, debug, hides2, perp, cuda, 
 
 
     labarray = np.array(labels)
+    global_balance = []
     for i in range(3):
-        print(np.sum(labarray == i))
+        num_this_label = np.sum(labarray == i)
+        print(num_this_label)
+        global_balance.append(num_this_label)
 
+    global_balance = np.array(global_balance)
+    global_balance = global_balance / np.sum(global_balance)
 
     if os.path.exists(f"{outpath}_AR{r}_{partition}_T{perp}.tmp.npy"):
         print(f"Loading temporary tsne, perp={perp}")
@@ -245,15 +253,88 @@ def main(anlipath, modelpath, r, outpath, partition, debug, hides2, perp, cuda, 
     print(use_counts)
     print(bad_counts)
     """
+
+    kms = KMeans(n_clusters=n_clusters).fit(X_tsne)
+
+    cluster_ids = kms.predict(X_tsne)
+
+    cluster_counts = [np.array([0,0,0]) for i in range(n_clusters)]
+
+    for i in range(cluster_ids.shape[0]):
+        cluster_counts[cluster_ids[i]][labarray[i]] += 1
+
+    print(global_balance)
+
+    imbalances = []
+
+    for i in range(n_clusters):
+        # check balance of this cluster
+        this_balance = np.array(cluster_counts[i]) / sum(cluster_counts[i])
+        #print(cluster_counts[i])
+        imbalance = this_balance - global_balance
+        imbalance = np.sqrt(np.sum(imbalance * imbalance))
+        #print(imbalance)
+        imbalances.append(imbalance)
+
+    imbalances = np.array(imbalances)
+
+    print(imbalances.max())
+    print(imbalances.mean())
+    print(imbalances.min())
+
+    print(np.sum(imbalances > 0.25))
+    print(np.sum(imbalances > 0.2))
+    print(np.sum(imbalances > 0.15))
+    print(np.sum(imbalances > 0.1))
+    print(np.sum(imbalances > 0.05))
+
+    # outlier is size of dataset, True if example is outlier (to be flipped) false else
+    outlier = list(map(lambda x: list(imbalances > threshold)[x], list(cluster_ids)))
+
+    outliers = []
+    regulars = []
+    print(len(keys))
+    print(len(outlier))
+    print(X_tsne.shape[0])
+    for i in range(len(outlier)):
+        if outlier[i]:
+            outliers.append((X_tsne[i,:], labels[i]))
+        else:
+            regulars.append((X_tsne[i,:], labels[i]))
+    # group by condition
+
     if plot:
-        plt.scatter(np.flip(X_tsne[:,0]), np.flip(X_tsne[:,1]), c=list(map(lambda x: colors[keys[x]], list(np.flip(np.array(labels))))))
-        #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=list(map(lambda x: colors[keys[x]], labels)))
+        #plt.scatter(np.flip(X_tsne[:,0]), np.flip(X_tsne[:,1]), c=list(map(lambda x: colors[keys[x]], list(np.flip(np.array(labels))))))
+        X_tsne, labels = zip(*outliers)
+        X_tsne = np.stack(X_tsne)
+        idces = list(range(len(labels)))
+        random.shuffle(idces)
+        idces = np.array(idces)
+        plt.scatter(X_tsne[idces,0], X_tsne[idces,1], c=list(map(lambda x: colors[keys[x]], list(np.array(labels)[idces]))), marker="x")
+        X_tsne, labels = zip(*regulars)
+        X_tsne = np.stack(X_tsne)
+        idces = list(range(len(labels)))
+        random.shuffle(idces)
+        idces = np.array(idces)
+        plt.scatter(X_tsne[:,0], X_tsne[:,1], c=list(map(lambda x: colors[keys[x]], list(np.array(labels)[idces]))), marker="x", s=1)
+        #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=cluster_ids)
         #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=use_pt)
         #plt.scatter(X_tsne[:,0], X_tsne[:,1], c=lens_hyps)
         #plt.plot([-1.265,-0.465,-1.457],[-1.938,-0.194,1.867])
         plt.show()
     #plt.
 
+    if plot:    
+        cumulative_weird = []
+        cumulative_x = []
+        for i in range(n_clusters):
+            cumulative_weird.append(np.sum(imbalances > float(i) / n_clusters))
+            cumulative_x.append( float(i) / n_clusters )
+        plt.plot(cumulative_x, cumulative_weird)
+        plt.title("ANLI")
+        plt.xlabel("Threshold (L2 distance from global distribution of labels)")
+        plt.ylabel("No. Clusters exceeding Threshold")
+        plt.show()
 
 
     #tok()
