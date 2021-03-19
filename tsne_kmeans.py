@@ -1,6 +1,11 @@
 """
-CUDA_VISIBLE_DEVICES=0 python dataset.py --cuda \
---basepath /mnt/hdd/saxon/snli_1.0/ \
+CUDA_VISIBLE_DEVICES=0 python tsne_kmeans.py --cuda \
+--dataset S --basepath /mnt/hdd/saxon/snli_1.0/ \
+--modelpath /mnt/hdd/saxon/roberta-nli/weights/roberta_nli/ \
+--outpath /mnt/hdd/saxon/roberta-nli/
+
+CUDA_VISIBLE_DEVICES=0 python tsne_kmeans.py --cuda \
+--dataset A1 --basepath /mnt/hdd/saxon/anli_v1.0/ \
 --modelpath /mnt/hdd/saxon/roberta-nli/weights/roberta_nli/ \
 --outpath /mnt/hdd/saxon/roberta-nli/
 
