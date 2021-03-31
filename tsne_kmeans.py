@@ -1,13 +1,24 @@
 """
 CUDA_VISIBLE_DEVICES=0 python tsne_kmeans.py --cuda \
---dataset S --basepath /mnt/hdd/saxon/snli_1.0/ \
 --modelpath /mnt/hdd/saxon/roberta-nli/weights/roberta_nli/ \
---outpath /mnt/hdd/saxon/roberta-nli/
+--outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/snli_1.0/ --dataset S --partition train
 
-CUDA_VISIBLE_DEVICES=0 python tsne_kmeans.py --cuda \
---dataset A1 --basepath /mnt/hdd/saxon/anli_v1.0/ \
+CUDA_VISIBLE_DEVICES=1 python tsne_kmeans.py --cuda \
 --modelpath /mnt/hdd/saxon/roberta-nli/weights/roberta_nli/ \
---outpath /mnt/hdd/saxon/roberta-nli/
+--outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/anli_v1.0/ --dataset A1 --partition train
+
+CUDA_VISIBLE_DEVICES=2 python tsne_kmeans.py --cuda \
+--modelpath /mnt/hdd/saxon/roberta-nli/weights/roberta_nli/ \
+--outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/anli_v1.0/ --dataset A2 --partition train
+
+CUDA_VISIBLE_DEVICES=3 python tsne_kmeans.py --cuda \
+--modelpath /mnt/hdd/saxon/roberta-nli/weights/roberta_nli/ \
+--outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/anli_v1.0/ --dataset A3 --partition train
+
 
 """
 
@@ -35,9 +46,10 @@ import matplotlib.pyplot as plt
 
 SNLI_PATH = "/Users/mssaxon/data/snli_1.0/"
 ANLI_PATH = "/Users/mssaxon/data/anli_v1.0/"
+MNLI_PATH = "/Users/mssaxon/data/multinli_1.0/"
 MODEL_PATH = '/Users/mssaxon/Documents/github/DatasetAnalysis/classifier/weights/roberta_nli'
 
-/mnt/hdd/saxon/anli_v1.0/
+#/mnt/hdd/saxon/anli_v1.0/
 
 # tab separated gold_label s1bp s2bp s1p s2p s1 s2 captionID pairID label1 label2 label3 label4 label5
 
@@ -48,6 +60,7 @@ VALID_DATASETS = {
     "A1": ("anli", 1, ["context", "hypothesis"]),
     "A2": ("anli", 2, ["context", "hypothesis"]),
     "A3": ("anli", 3, ["context", "hypothesis"]),
+    "M" : ("mnli", None, ["sentence1", "sentence2"])
 }
 
 FULL_LABEL_MAP = {
@@ -71,21 +84,24 @@ def load_sentences_str(registered_path, dataset, partition, sentencemap):
         lines = open(registered_path[partition]).readlines()
         #random.shuffle(lines)
         n = len(lines)
-        eval_dataset = map(lambda line: json.loads(line), lines)
 
         sents = lazydict()
 
-        for i, line in enumerate(eval_dataset):
+        for i, line in enumerate(lines):
+            linecopy = line
+            line = json.loads(line)
             if dataset == "S":
                 lst = list(line["annotator_labels"])
                 label = max(set(lst), key=lst.count)
+            elif dataset == "M":
+                label = line["gold_label"]
             else:
                 label = FULL_LABEL_MAP[line["label"]]
             #label = line["gold_label"]
             s1 = line[sentencemap[0]] 
             s2 = line[sentencemap[1]]
             #print(label + "," + eval_sent)
-            sents.add(label, (s1, s2))
+            sents.add(label, (s1, s2, linecopy))
             # get the embedding
             print(f"{i}/{n}", end="\r")
 
@@ -105,10 +121,18 @@ def load_sentences_str(registered_path, dataset, partition, sentencemap):
 @click.option('--plot', is_flag=True)
 @click.option('--redo_tsne', is_flag=True)
 @click.option('--redo_model', is_flag=True)
+@click.option('--cluster_subset', is_flag=True)
+@click.option('--apply_pca', is_flag=True)
+@click.option('--save_text', is_flag=True)
 @click.option('--n_clusters', default=50)
 @click.option('--threshold', default=0.25)
-def main(basepath, modelpath, outpath, partition, debug, hides2, perp, cuda, plot, redo_tsne, redo_model, n_clusters, threshold):
+def main(basepath, modelpath, outpath, dataset, partition, debug, hides2, perp, cuda, plot, redo_tsne, redo_model, cluster_subset, apply_pca, save_text, n_clusters, threshold):
     ds, r, sentencemap = VALID_DATASETS[dataset]
+
+    if ds == "anli" and basepath == SNLI_PATH:
+        basepath = ANLI_PATH
+    elif ds == "mnli" and basepath == SNLI_PATH:
+        basepath = MNLI_PATH
 
     # SNLI
     registered_path = {
@@ -118,6 +142,9 @@ def main(basepath, modelpath, outpath, partition, debug, hides2, perp, cuda, plo
         'anli_train': basepath + f"R{r}/" + "train.jsonl",
         'anli_dev': basepath + f"R{r}/" + "dev.jsonl",
         'anli_test': basepath + f"R{r}/" + "test.jsonl",
+        'mnli_train': basepath + f"multinli_1.0_" + "train.jsonl",
+        'mnli_dev': basepath + f"multinli_1.0_" + "dev.jsonl",
+        'mnli_test': basepath + f"multinli_1.0_" + "test.jsonl",
     }
 
     hides1 = not hides2
@@ -157,6 +184,8 @@ def main(basepath, modelpath, outpath, partition, debug, hides2, perp, cuda, plo
             if dataset == "S":
                 lst = list(line["annotator_labels"])
                 label = max(set(lst), key=lst.count)
+            elif dataset == "M":
+                label = line["gold_label"]
             else:
                 label = FULL_LABEL_MAP[line["label"]]
             s1 = line[sentencemap[0]] 
@@ -206,7 +235,7 @@ def main(basepath, modelpath, outpath, partition, debug, hides2, perp, cuda, plo
 
     print("")
 
-    sents = load_sentences_str(registered_path, f"{ds}_{partition}")
+    sents = load_sentences_str(registered_path, dataset, f"{ds}_{partition}", sentencemap)
 
     sents_l = []
 
@@ -290,18 +319,33 @@ def main(basepath, modelpath, outpath, partition, debug, hides2, perp, cuda, plo
 
 
     print(X)
-    """
-    pca = PCA().fit(X)
-    X_pc = pca.transform(X)
 
-    plt.plot(np.cumsum(pca.explained_variance_ratio_))
-    plt.xlabel('number of components')
-    plt.ylabel('cumulative explained variance');
-    plt.show()
-    """
-    kms = KMeans(n_clusters=n_clusters, verbose=True, init='k-means++').fit(X_tsne)
+    if cluster_subset:
+        selected = np.shuffle(np.arange(0,X.shape[0]))[0:min(20000,X.shape[0])]
+        pca_in = X[selected,:]
+    else:
+        pca_in = X
 
-    cluster_ids = kms.predict(X_tsne)
+    
+    if apply_pca:
+        pca = PCA(n_components=50).fit(pca_in)
+        X_pc = pca.transform(X)
+        """
+        plt.plot(np.cumsum(pca.explained_variance_ratio_))
+        plt.xlabel('number of components')
+        plt.ylabel('cumulative explained variance');
+        plt.show()
+        """
+        if cluster_subset:
+            cluster_in = X_pc[selected,:]
+        else:
+            cluster_in = X_pc
+    else:
+        cluster_in = X_tsne
+
+    kms = KMeans(n_clusters=n_clusters, verbose=True, init='k-means++').fit(cluster_in)
+
+    cluster_ids = kms.predict(cluster_in)
 
     cluster_counts = [np.array([0,0,0]) for i in range(n_clusters)]
 
@@ -340,12 +384,19 @@ def main(basepath, modelpath, outpath, partition, debug, hides2, perp, cuda, plo
     print(len(keys))
     print(len(outlier))
     print(X_tsne.shape[0])
+
+    outlier_lines = []
     for i in range(len(outlier)):
         if outlier[i]:
             outliers.append((X_tsne[i,:], labels[i]))
+            outlier_lines.append(sents_l[i][2])
         else:
             regulars.append((X_tsne[i,:], labels[i]))
     # group by condition
+
+    if save_text:
+        with open(f"{outpath}_{dataset}_{partition}_outliers.jsonl", "w") as outfile:
+            outfile.writelines(outlier_lines)
 
     if plot:
         #plt.scatter(np.flip(X_tsne[:,0]), np.flip(X_tsne[:,1]), c=list(map(lambda x: colors[keys[x]], list(np.flip(np.array(labels))))))
@@ -374,7 +425,7 @@ def main(basepath, modelpath, outpath, partition, debug, hides2, perp, cuda, plo
             cumulative_weird.append(np.sum(imbalances > float(i) / n_clusters))
             cumulative_x.append( float(i) / n_clusters )
         plt.plot(cumulative_x, cumulative_weird)
-        plt.title("SNLI")
+        plt.title(ds)
         plt.xlabel("Threshold (L2 distance from global distribution of labels)")
         plt.ylabel("No. Clusters exceeding Threshold")
         plt.show()

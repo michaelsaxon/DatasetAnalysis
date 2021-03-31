@@ -3,3 +3,4 @@ classifier*
 _*.tmp.npy
 __pycache__*
 __pycache__
+_*.jsonl
