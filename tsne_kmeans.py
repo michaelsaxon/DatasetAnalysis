@@ -26,6 +26,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset, random_split, RandomSampler, Dataset
 import pandas as pd
 import numpy as np
+import pickle
 
 import transformers
 import click
@@ -320,15 +321,25 @@ def main(basepath, modelpath, outpath, dataset, partition, debug, hides2, perp, 
 
     print(X)
 
+    pklpth = f"{outpath}_{dataset}"
+
     if cluster_subset:
-        selected = np.shuffle(np.arange(0,X.shape[0]))[0:min(20000,X.shape[0])]
+        selected = np.arange(0,X.shape[0])
+        np.random.shuffle(selected)
+        selected = selected[0:min(20000,X.shape[0])]
         pca_in = X[selected,:]
     else:
         pca_in = X
 
     
     if apply_pca:
-        pca = PCA(n_components=50).fit(pca_in)
+        pcapath = pklpth + "_pca.tmp.npy"
+        if os.path.exists(pcapath):
+            pca = pickle.load(open(pcapath, "rb"))
+        else:
+            pca = PCA(n_components=50).fit(pca_in)
+            pickle.dump(pca, open(pcapath, "wb"))
+
         X_pc = pca.transform(X)
         """
         plt.plot(np.cumsum(pca.explained_variance_ratio_))
@@ -343,7 +354,13 @@ def main(basepath, modelpath, outpath, dataset, partition, debug, hides2, perp, 
     else:
         cluster_in = X_tsne
 
-    kms = KMeans(n_clusters=n_clusters, verbose=True, init='k-means++').fit(cluster_in)
+    kmpath = pklpth + "_kms.tmp.npy"
+
+    if os.path.exists(kmpath):
+        kms = pickle.load(open(kmpath, "rb"))
+    else:
+        kms = KMeans(n_clusters=n_clusters, verbose=True, init='k-means++').fit(cluster_in)
+        pickle.dump(kms, open(kmpath, "wb"))
 
     cluster_ids = kms.predict(cluster_in)
 
@@ -359,6 +376,9 @@ def main(basepath, modelpath, outpath, dataset, partition, debug, hides2, perp, 
 
     print(cluster_ids)
 
+    cluster_corrects = []
+    cluster_sums = []
+
     for i in range(n_clusters):
         # check balance of this cluster
         this_balance = np.array(cluster_counts[i]) / sum(cluster_counts[i])
@@ -367,6 +387,9 @@ def main(basepath, modelpath, outpath, dataset, partition, debug, hides2, perp, 
         imbalance = np.sqrt(np.sum(imbalance * imbalance))
         #print(imbalance)
         imbalances.append(imbalance)
+        cluster_corrects.append(max(cluster_counts[i]))
+        cluster_sums.append(sum(cluster_counts[i]))
+
 
     imbalances = np.array(imbalances)
 
@@ -374,6 +397,10 @@ def main(basepath, modelpath, outpath, dataset, partition, debug, hides2, perp, 
     print(imbalances.mean())
     print(imbalances.min())
 
+
+    correct_classification = sum(cluster_corrects) / float(sum(cluster_sums))
+
+    print(f"Fit for this clustering: {correct_classification} \%")
 
 
     # outlier is size of dataset, True if example is outlier (to be flipped) false else

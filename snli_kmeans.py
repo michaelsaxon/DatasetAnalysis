@@ -32,7 +32,7 @@ SNLI_PATH = "/Users/mssaxon/data/snli_1.0/"
 ANLI_PATH = "/Users/mssaxon/data/anli_v1.0/"
 MODEL_PATH = '/Users/mssaxon/Documents/github/DatasetAnalysis/classifier/weights/roberta_nli'
 
-/mnt/hdd/saxon/anli_v1.0/
+#/mnt/hdd/saxon/anli_v1.0/
 
 # tab separated gold_label s1bp s2bp s1p s2p s1 s2 captionID pairID label1 label2 label3 label4 label5
 
@@ -102,7 +102,7 @@ def load_sentences_str(registered_path, dataset, partition, sentencemap):
 @click.option('--redo_model', is_flag=True)
 @click.option('--n_clusters', default=50)
 @click.option('--threshold', default=0.25)
-def main(basepath, modelpath, outpath, partition, debug, hides2, perp, cuda, plot, redo_tsne, redo_model, n_clusters, threshold):
+def main(basepath, modelpath, outpath, dataset, partition, debug, hides2, perp, cuda, plot, redo_tsne, redo_model, n_clusters, threshold):
     ds, r, sentencemap = VALID_DATASETS[dataset]
 
     # SNLI
