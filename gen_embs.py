@@ -185,3 +185,6 @@ def main(basepath, outpath, dataset, partition, debug, hides2, cuda, redo_model)
     np.save(f"{outpath}_{dataset}_{partition}_BERT_X.tmp", X)
     np.save(f"{outpath}_{dataset}_{partition}_BERT_l.tmp", np.array(labels))
     print(f"Success. Arrays saved to '{outpath}_{dataset}_{partition}_BERT_X.tmp'")
+
+if __name__ == "__main__":
+    main()
