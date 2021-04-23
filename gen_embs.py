@@ -16,6 +16,33 @@ CUDA_VISIBLE_DEVICES=3 python gen_embs.py --cuda \
 --basepath /mnt/hdd/saxon/anli_v1.0/ --dataset A3 --partition train
 
 
+CUDA_VISIBLE_DEVICES=1 python gen_embs.py --cuda --outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/snli_1.0/ --dataset S --partition dev && \
+CUDA_VISIBLE_DEVICES=1 python gen_embs.py --cuda --outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/snli_1.0/ --dataset S --partition test && \
+CUDA_VISIBLE_DEVICES=1 python gen_embs.py --cuda --outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/snli_1.0/ --dataset S --partition train
+
+
+CUDA_VISIBLE_DEVICES=0 python gen_embs.py --cuda --outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/anli_v1.0/ --dataset A3 --partition dev && \
+CUDA_VISIBLE_DEVICES=0 python gen_embs.py --cuda --outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/anli_v1.0/ --dataset A3 --partition test && \
+CUDA_VISIBLE_DEVICES=0 python gen_embs.py --cuda --outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/anli_v1.0/ --dataset A3 --partition train && \
+
+
+CUDA_VISIBLE_DEVICES=2 python gen_embs.py --cuda --outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/multinli_1.0/ --dataset M --partition dev && \
+CUDA_VISIBLE_DEVICES=2 python gen_embs.py --cuda --outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/multinli_1.0/ --dataset M --partition test && \
+CUDA_VISIBLE_DEVICES=2 python gen_embs.py --cuda --outpath /mnt/hdd/saxon/roberta-nli/ \
+--basepath /mnt/hdd/saxon/multinli_1.0/ --dataset M --partition train
+
+
+
+multinli_1.0
+
 """
 
 import torch
@@ -161,8 +188,8 @@ def main(basepath, outpath, dataset, partition, debug, hides2, cuda, redo_model)
             for key in inseq.keys():
                 inseq[key] = inseq[key].cuda()
         out = model(**inseq, output_hidden_states = True)
-        emb = out["hidden_states"][-1]
-        emb = torch.tanh(model.classifier.dense(emb[:,0,:]))
+        emb = out["hidden_states"][-1][:,0,:]
+        #emb = torch.tanh(model.classifier.dense(emb[:,0,:]))
         emb = emb.squeeze().detach().cpu().numpy().flatten()
         #print(inseq)
         #print(emb)
@@ -185,3 +212,6 @@ def main(basepath, outpath, dataset, partition, debug, hides2, cuda, redo_model)
     np.save(f"{outpath}_{dataset}_{partition}_BERT_X.tmp", X)
     np.save(f"{outpath}_{dataset}_{partition}_BERT_l.tmp", np.array(labels))
     print(f"Success. Arrays saved to '{outpath}_{dataset}_{partition}_BERT_X.tmp'")
+
+if __name__ == "__main__":
+    main()
