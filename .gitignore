@@ -4,3 +4,6 @@ _*.tmp.npy
 __pycache__*
 __pycache__
 _*.jsonl
+tmp/*
+tmp*
+tmp

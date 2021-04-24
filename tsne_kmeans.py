@@ -112,7 +112,7 @@ def load_sentences_str(registered_path, dataset, partition, sentencemap):
 @click.command()
 @click.option('--basepath', default=SNLI_PATH)
 @click.option('--modelpath', default=MODEL_PATH)
-@click.option('--outpath', default="")
+@click.option('--outpath', default="tmp/")
 @click.option('--dataset', default="S")
 @click.option('--partition', default="train")
 @click.option('--debug', is_flag=True)
