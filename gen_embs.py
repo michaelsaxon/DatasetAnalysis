@@ -53,8 +53,8 @@ import pickle
 
 import transformers
 import click
-#from transformers import RobertaTokenizer, RobertaForSequenceClassification
-from transformers import BertTokenizer, BertModel
+from transformers import RobertaTokenizer, RobertaForSequenceClassification
+#from transformers import BertTokenizer, BertModel
 import torch.nn.functional as F
 
 from sklearn.manifold import TSNE
@@ -69,9 +69,11 @@ import json
 
 import matplotlib.pyplot as plt
 
-SNLI_PATH = "/Users/mssaxon/data/snli_1.0/"
-ANLI_PATH = "/Users/mssaxon/data/anli_v1.0/"
-MNLI_PATH = "/Users/mssaxon/data/multinli_1.0/"
+BASEPATH= "/data2/saxon"
+#SNLI_PATH = "/Users/mssaxon/data/snli_1.0/"
+SNLI_PATH = f"{BASEPATH}/data/snli_1.0/"
+ANLI_PATH = f"/Users/mssaxon/data/anli_v1.0/"
+MNLI_PATH = f"/Users/mssaxon/data/multinli_1.0/"
 MODEL_PATH = '/Users/mssaxon/Documents/github/DatasetAnalysis/classifier/weights/roberta_nli'
 
 VALID_DATASETS = {
@@ -101,7 +103,7 @@ class lazydict():
 #@click.option('--modelpath', default=MODEL_PATH)
 @click.command()
 @click.option('--basepath', default=SNLI_PATH)
-@click.option('--outpath', default="tmp/")
+@click.option('--outpath', default="fixed_out/")
 @click.option('--dataset', default="S")
 @click.option('--partition', default="train")
 @click.option('--debug', is_flag=True)
@@ -131,15 +133,15 @@ def main(basepath, outpath, dataset, partition, debug, hides2, cuda, redo_model)
 
     hides1 = not hides2
     print("Loading model...")
-    #model = RobertaForSequenceClassification.from_pretrained(modelpath)
-    model = BertModel.from_pretrained("bert-large-uncased")
+    model = RobertaForSequenceClassification.from_pretrained(modelpath)
+    #model = BertModel.from_pretrained("bert-large-uncased")
 
     if cuda:
         model = model.cuda()
 
     print("Loading tokenizer...")
-    #tok = RobertaTokenizer.from_pretrained(modelpath)
-    tok = BertTokenizer.from_pretrained('bert-large-uncased')
+    tok = RobertaTokenizer.from_pretrained(modelpath)
+    #tok = BertTokenizer.from_pretrained('bert-large-uncased')
     print("Loading scorer...")
 
     """
@@ -176,9 +178,12 @@ def main(basepath, outpath, dataset, partition, debug, hides2, cuda, redo_model)
         # to combine, truncate BOS token from s2 and add to s1
         #print(s1t)
         #print(s2t)
+        mask_token_id = tok(["<mask>"])["input_ids"][0]
         if hides1:
             inseq = {
-                "input_ids" : torch.cat([s1t["input_ids"], s2t["input_ids"][:,1:]], dim=1),
+                #"input_ids" : torch.cat([s1t["input_ids"], s2t["input_ids"][:,1:]], dim=1),
+                "input_ids" : torch.cat([torch.tensor([mask_token_id] * s1t["input_ids"].shape[1]).unsqueeze(0),
+                    s2t["input_ids"][:,1:]], dim=1),
                 "attention_mask" : torch.cat([s1t["attention_mask"][:,0].unsqueeze(-1), 
                     0*s1t["attention_mask"][:,1:], s2t["attention_mask"][:,1:]], dim=1)
             }
