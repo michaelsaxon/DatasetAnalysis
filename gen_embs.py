@@ -100,7 +100,7 @@ class lazydict():
         self.indict[key].append(val)
 
 ################### FOR NOW BERT ONLY
-#@click.option('--modelpath', default=MODEL_PATH)
+@click.option('--modelpath', default=MODEL_PATH)
 @click.command()
 @click.option('--basepath', default=SNLI_PATH)
 @click.option('--outpath', default="fixed_out/")
@@ -110,7 +110,7 @@ class lazydict():
 @click.option('--hides2', is_flag=True)
 @click.option('--cuda', is_flag=True)
 @click.option('--redo_model', is_flag=True)
-def main(basepath, outpath, dataset, partition, debug, hides2, cuda, redo_model):
+def main(modelpath, basepath, outpath, dataset, partition, debug, hides2, cuda, redo_model):
     ds, r, sentencemap = VALID_DATASETS[dataset]
 
     if ds == "anli" and basepath == SNLI_PATH:

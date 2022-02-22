@@ -1,0 +1,4 @@
+{
+    "python.analysis.extraPaths": ["/Users/mssaxon/anaconda3/envs/tf/lib/python3.8/site-packages/"],
+    "terminal.integrated.defaultProfile.osx": "zsh",
+}
