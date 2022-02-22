@@ -20,11 +20,19 @@ conda activate DSAnalysis
 conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch
 ```
 
-Finally, install the requirements.txt:
+Install the requirements.txt:
 
 ```
 pip install -r requirements.txt
 ```
+
+Finally, configure Weights & Biases
+
+```
+wandb login
+```
+
+and paste in either Michael's **private key** or use your own.
 
 ### Setting up working directory, env vars, data
 
