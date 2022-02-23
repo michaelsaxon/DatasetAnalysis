@@ -24,7 +24,6 @@ import wandb
 import json
 from tqdm import tqdm
 from pathlib import PurePath
-from typing import List
 
 from collections import defaultdict
 import os
@@ -162,7 +161,7 @@ class NLIDataset(Dataset):
 
 
 def pad_seq_collate_fn(seq_of_samples):
-    data = defaultdict(List)
+    data = defaultdict(list)
     for datum in seq_of_samples:
         for key in datum.keys():
             data[key].append(datum[key])
