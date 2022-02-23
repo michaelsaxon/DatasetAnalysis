@@ -63,7 +63,7 @@ class RobertaClassifier(pl.LightningModule):
 
 
     def forward(self, **kwargs):
-        return self.model(**kwargs)        
+        return self.model(**kwargs)
 
 
     def forward_loss_acc(self, batch):
@@ -73,6 +73,7 @@ class RobertaClassifier(pl.LightningModule):
         preds = torch.max(logits, dim=-1).indices
         print(logits.shape)
         print(targets.shape)
+        print(logits)
         loss = self.loss_fct(logits, targets)
         acc = torch.sum(torch.eq(preds, targets)) / targets.shape[0]
         return preds, loss, acc
