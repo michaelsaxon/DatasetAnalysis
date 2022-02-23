@@ -203,7 +203,8 @@ class plNLIDataModule(pl.LightningDataModule):
         train_data = DataLoader(dataset, 
             sampler = RandomSampler(dataset), 
             batch_size = self.batch_size,
-            collate_fn = pad_seq_collate_fn)
+            collate_fn = pad_seq_collate_fn,
+            num_workers = 16)
         return train_data
 
     def val_dataloader(self):
@@ -211,7 +212,8 @@ class plNLIDataModule(pl.LightningDataModule):
         val_data = DataLoader(dataset, 
             sampler = RandomSampler(dataset), 
             batch_size = self.batch_size,
-            collate_fn = pad_seq_collate_fn)
+            collate_fn = pad_seq_collate_fn,
+            num_workers = 16)
         return val_data
 
     def test_dataloader(self):
@@ -219,7 +221,8 @@ class plNLIDataModule(pl.LightningDataModule):
         test_data = DataLoader(dataset, 
             sampler = RandomSampler(dataset), 
             batch_size = self.batch_size,
-            collate_fn = pad_seq_collate_fn)
+            collate_fn = pad_seq_collate_fn,
+            num_workers = 16)
         return test_data
 
 
@@ -235,7 +238,7 @@ class plNLIDataModule(pl.LightningDataModule):
 @click.option('--dataset', default="snli")
 @click.option('--lr', default=2e-5)
 @click.option('--model_id', default="roberta-large")
-@click.option('--batch_size', default=16)
+@click.option('--batch_size', default=48)
 @click.option('--biased', is_flag=True)
 def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size):
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir"])
