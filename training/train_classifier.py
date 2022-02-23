@@ -204,13 +204,12 @@ class plNLIDataModule(pl.LightningDataModule):
 @click.command()
 @click.option('--n_gpus', default=1, help='number of gpus')
 @click.option('--n_epochs', default=25, help='max number of epochs')
-@click.option('--outfile', default="final_out.ckpt")
 @click.option('--dataset', default="snli")
 @click.option('--lr', default=2e-5)
 @click.option('--model_id', default="roberta-large")
 @click.option('--batch_size', default=16)
 @click.option('--biased', is_flag=True)
-def main(n_gpus, n_epochs, trainfile, dataset, outfile, lr, biased, model_id, batch_size):
+def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size):
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir"])
 
     wandb.login()
@@ -251,7 +250,7 @@ def main(n_gpus, n_epochs, trainfile, dataset, outfile, lr, biased, model_id, ba
 
     wandb_logger.watch(ltmodel.model, log_freq=500)
 
-    nli_data = plNLIDataModule(tokenizer, PurePath(dir_settings["dataset_dir"] + "/" + trainfile), 
+    nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset,
         batch_size = batch_size, biased = biased)
 
     run_path = PurePath(dir_settings["data_save_dir"] + "/" + run_name)
