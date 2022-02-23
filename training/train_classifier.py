@@ -165,7 +165,7 @@ def pad_seq_collate_fn(seq_of_samples):
     for datum in seq_of_samples:
         for key in datum.keys():
             data[key].append(datum[key])
-            print(data[key].shape)
+            print(datum[key].shape)
     for key in data.keys():
         data[key] = torch.nn.utils.rnn.pad_sequence(data[key], batch_first = True)
     return data
