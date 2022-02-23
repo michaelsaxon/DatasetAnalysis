@@ -11,6 +11,36 @@ CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
 CUDA_VISIBLE_DEVICES=4 python train_classifier.py --n_gpus 1 \
      --dataset S --batch_size 64 --biased --extreme_bias --lr 0.00005
 
+CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
+     --dataset S --batch_size 128 --s2only
+
+CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
+     --dataset S --batch_size 128 --s2only --lr 0.00001
+
+CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
+     --dataset S --batch_size 128 --s2only --lr 0.000005 --n_epochs 10
+
+CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
+     --dataset A1 --batch_size 36 --s2only --lr 0.00001
+
+CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
+     --dataset A1 --batch_size 36 --s2only --lr 0.000005
+
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
+     --dataset A2 --batch_size 36 --s2only --lr 0.00001
+
+# todo
+
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
+     --dataset A2 --batch_size 36 --s2only --lr 0.000005
+
+CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
+     --dataset A3 --batch_size 36 --s2only --lr 0.00001
+
+CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
+     --dataset A3 --batch_size 36 --s2only --lr 0.000005
+
+
 '''
 
 from email.policy import default
@@ -93,12 +123,17 @@ class RobertaClassifier(pl.LightningModule):
         self.log('train_accuracy', acc)
         return loss
 
-
     def validation_step(self, batch, batch_idx):
         preds, loss, acc = self.forward_loss_acc(batch)
         self.log('val_loss', loss)
         self.log('val_accuracy', acc)
         self.log('val_best_acc', acc)
+        return preds
+
+   def test_step(self, batch, batch_idx):
+        preds, loss, acc = self.forward_loss_acc(batch)
+        self.log('test_loss', loss)
+        self.log('test_accuracy', acc)
         return preds
 
 
@@ -329,6 +364,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
         logger = wandb_logger)
     print("Training...")
     trainer.fit(ltmodel, nli_data)
+    trainer.test(ltmodel, nli_data)
 
     wandb.finish()
 
