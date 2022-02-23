@@ -130,7 +130,7 @@ class RobertaClassifier(pl.LightningModule):
         self.log('val_best_acc', acc)
         return preds
 
-   def test_step(self, batch, batch_idx):
+    def test_step(self, batch, batch_idx):
         preds, loss, acc = self.forward_loss_acc(batch)
         self.log('test_loss', loss)
         self.log('test_accuracy', acc)
