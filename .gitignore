@@ -11,3 +11,7 @@ _*.jsonl
 tmp/*
 tmp*
 tmp
+wandb
+wandb*
+training/wandb
+training/wandb*

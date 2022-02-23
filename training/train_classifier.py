@@ -250,8 +250,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size):
 
     wandb_logger.watch(ltmodel.model, log_freq=500)
 
-    nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset,
-        batch_size = batch_size, biased = biased)
+    nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased)
 
     run_path = PurePath(dir_settings["data_save_dir"] + "/" + run_name)
     lazymkdir(run_path)
