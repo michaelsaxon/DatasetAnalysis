@@ -21,7 +21,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 import wandb
 import json
-import tqdm
+from tqdm import tqdm
 from pathlib import PurePath
 
 from collections import defaultdict
