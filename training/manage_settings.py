@@ -9,6 +9,7 @@ def lazymkdir(file):
     return file
 
 def get_write_setting(requested_setting, settings_dir):
+    lazymkdir(settings_dir)
     setting_path = PurePath(settings_dir + "/" + requested_setting)
     if not os.path.exists(setting_path):
         setting_val = input(f"Please provide requested setting '{requested_setting}':")
