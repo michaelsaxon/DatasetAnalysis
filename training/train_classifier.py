@@ -62,8 +62,8 @@ class RobertaClassifier(pl.LightningModule):
         self.loss_fct = loss_fct
 
 
-    def forward(self, x, **kwargs):
-        return self.model(x, **kwargs)        
+    def forward(self, **kwargs):
+        return self.model(**kwargs)        
 
 
     def forward_loss_acc(self, batch):
