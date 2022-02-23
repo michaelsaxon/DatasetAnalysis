@@ -44,6 +44,7 @@ You will want to set up a working directory where trained models, precomp'd embe
 
 ## TODOs
 
+- [x] complete basic implementation
 - [ ] Finish and check requirements.txt
 - [ ] Implement working dir stuff as 
 - [ ] Frequency list computation for levels of n-gram
