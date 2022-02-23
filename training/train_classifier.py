@@ -8,6 +8,7 @@ CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
 
 '''
 
+from email.policy import default
 import torch
 from torch.utils.data import DataLoader, TensorDataset, random_split, RandomSampler, Dataset
 import numpy as np
@@ -23,6 +24,7 @@ import wandb
 import json
 from tqdm import tqdm
 from pathlib import PurePath
+from typing import List
 
 from collections import defaultdict
 import os
@@ -159,6 +161,16 @@ class NLIDataset(Dataset):
         return datum
 
 
+def pad_seq_collate_fn(seq_of_samples):
+    data = defaultdict(List)
+    for datum in seq_of_samples:
+        for key in datum.keys():
+            data[key].append(datum[key])
+    for key in data.keys():
+        data[key] = torch.nn.utils.rnn.pad_sequence(data[key], batch_first = True)
+    return data
+
+
 class plNLIDataModule(pl.LightningDataModule):
     def __init__(self, tokenizer, basepath, dataset, batch_size, bias):
         super().__init__()
@@ -186,17 +198,26 @@ class plNLIDataModule(pl.LightningDataModule):
     # Load the training, validation and test sets in Pytorch Dataset objects
     def train_dataloader(self):
         dataset = NLIDataset(self.train, self.tokenizer, self.bias)                   
-        train_data = DataLoader(dataset, sampler = RandomSampler(dataset), batch_size = self.batch_size)
+        train_data = DataLoader(dataset, 
+            sampler = RandomSampler(dataset), 
+            batch_size = self.batch_size,
+            collate_fn = pad_seq_collate_fn)
         return train_data
 
     def val_dataloader(self):
         dataset = NLIDataset(self.valid, self.tokenizer, self.bias)
-        val_data = DataLoader(dataset, batch_size = self.batch_size)                       
+        val_data = DataLoader(dataset, 
+            sampler = RandomSampler(dataset), 
+            batch_size = self.batch_size,
+            collate_fn = pad_seq_collate_fn)
         return val_data
 
     def test_dataloader(self):
         dataset = NLIDataset(self.test, self.tokenizer, self.bias)
-        test_data = DataLoader(dataset, batch_size = self.batch_size)                   
+        test_data = DataLoader(dataset, 
+            sampler = RandomSampler(dataset), 
+            batch_size = self.batch_size,
+            collate_fn = pad_seq_collate_fn)
         return test_data
 
 
