@@ -71,6 +71,8 @@ class RobertaClassifier(pl.LightningModule):
         targets = batch['labels']
         logits = outputs.logits
         preds = torch.max(logits, dim=-1).indices
+        print(logits.shape)
+        print(targets.shape)
         loss = self.loss_fct(logits, targets)
         acc = torch.sum(torch.eq(preds, targets)) / targets.shape[0]
         return preds, loss, acc
