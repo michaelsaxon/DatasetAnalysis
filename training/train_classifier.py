@@ -1,5 +1,7 @@
-#CUDA_VISIBLE_DEVICES=0,1,2,3 python train_bart.py --n_gpus 4 --basepath /mnt/hdd/saxon/bart/ --n_epochs 20
-#CUDA_VISIBLE_DEVICES=0,1,2,3 python train_bart.py --n_gpus 4 --basepath /mnt/hdd/saxon/bart/ --n_epochs 20 --trainfile final_lines.txt
+'''
+CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
+    --dataset snli --batch_size 16
+'''
 
 import torch
 from torch.utils.data import DataLoader, TensorDataset, random_split, RandomSampler, Dataset
@@ -20,14 +22,11 @@ from pathlib import PurePath
 from collections import defaultdict
 import os
 
+import time
+
+from manage_settings import get_write_settings, lazymkdir
+
 BASEPATH = "/data2/saxon/bart_test"
-
-def lazymkdir(file):
-    head = os.path.split(file)[0]
-    if not os.path.isdir(head):
-        os.mkdir(head)
-    return file
-
 
 VALID_DATASETS = {
     "S" : ("snli", None, ["sentence1", "sentence2"]),
@@ -78,16 +77,16 @@ class RobertaClassifier(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         _, loss, acc = self.forward_loss_acc(batch)
-        self.log('train/loss', loss)
-        self.log('train/accuracy', acc)
+        self.log('train_loss', loss)
+        self.log('train_accuracy', acc)
         return loss
 
 
     def validation_step(self, batch, batch_idx):
         preds, loss, acc = self.forward_loss_acc(batch)
-        self.log('val/loss', loss)
-        self.log('val/accuracy', acc)
-        self.log('val/best_acc', acc)
+        self.log('val_loss', loss)
+        self.log('val_accuracy', acc)
+        self.log('val_best_acc', acc)
         return preds
 
 
@@ -114,7 +113,7 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
             label = line["gold_label"]
         else:
             label = FULL_LABEL_MAP[line["label"]]
-        s1 = line[sentencemap[0]] 
+        s1 = line[sentencemap[0]]
         s2 = line[sentencemap[1]]
         if label_id:
             label = LABEL_IDS[label]
@@ -204,19 +203,22 @@ class plNLIDataModule(pl.LightningDataModule):
 # abs_split.txt final_lines.txt
 @click.command()
 @click.option('--n_gpus', default=1, help='number of gpus')
-@click.option('--n_epochs', default=2, help='max number of epochs')
-@click.option('--basepath', default=BASEPATH)
+@click.option('--n_epochs', default=25, help='max number of epochs')
 @click.option('--outfile', default="final_out.ckpt")
-@click.option('--datasets', default="../datasets.csv")
 @click.option('--dataset', default="snli")
 @click.option('--lr', default=2e-5)
 @click.option('--model_id', default="roberta-large")
 @click.option('--batch_size', default=16)
 @click.option('--biased', is_flag=True)
-def main(n_gpus, n_epochs, basepath, trainfile, dataset, outfile, lr, biased, model_id, batch_size):
+def main(n_gpus, n_epochs, trainfile, dataset, outfile, lr, biased, model_id, batch_size):
+    dir_settings = get_write_settings(["data_save_dir", "dataset_dir"])
+
     wandb.login()
 
     projectname = "DatasetAnalysis-NLIbias"
+    
+    start_time_str = time.strftime('%y%m%d:%H:%M')
+
     # generate wandb config details
     wandb.init(
         project = projectname,
@@ -228,15 +230,16 @@ def main(n_gpus, n_epochs, basepath, trainfile, dataset, outfile, lr, biased, mo
             "dataset" : dataset,
             "model" : model_id,
             "biased": biased,
-            "lang": "en"
+            "lang": "en",
+            "start" : start_time_str
         }
     )
     # setting up global metrics
-    wandb.define_metric('val/best_acc', summary="max")
-
-    # https://pytorch-lightning.readthedocs.io/en/latest/extensions/generated/pytorch_lightning.loggers.WandbLogger.html?highlight=wandblogger
+    wandb.define_metric('val_best_acc', summary="max")
 
     wandb_logger = WandbLogger(log_model=True)
+
+    run_name = f"{dataset}-{model_id}-{lr}-{start_time_str}"
 
     print("Loading model...")
     model = RobertaForSequenceClassification.from_pretrained(model_id)
@@ -248,12 +251,17 @@ def main(n_gpus, n_epochs, basepath, trainfile, dataset, outfile, lr, biased, mo
 
     wandb_logger.watch(ltmodel.model, log_freq=500)
 
-    nli_data = plNLIDataModule(tokenizer, basepath + "/" + trainfile, 
+    nli_data = plNLIDataModule(tokenizer, PurePath(dir_settings["dataset_dir"] + "/" + trainfile), 
         batch_size = batch_size, biased = biased)
-    path = basepath + "/ckpts"
-    lazymkdir(path)
+
+    run_path = PurePath(dir_settings["data_save_dir"] + "/" + run_name)
+    lazymkdir(run_path)
+    ckpts_path = PurePath(str(run_path) + "/ckpts")
+    lazymkdir(ckpts_path)
+
     print("Loading model...")
-    checkpoint = ModelCheckpoint(path)
+    checkpoint = ModelCheckpoint(dirpath=ckpts_path, monitor="val_accuracy", mode="max",
+        save_last=True, save_top_k=2)
     print("Init trainer...")
 
     trainer = pl.Trainer(gpus = n_gpus, max_epochs = n_epochs, 
@@ -261,7 +269,6 @@ def main(n_gpus, n_epochs, basepath, trainfile, dataset, outfile, lr, biased, mo
         logger = wandb_logger)
     print("Training...")
     trainer.fit(ltmodel, nli_data)
-    trainer.save_checkpoint(basepath + +"/" + outfile)
 
     wandb_logger.unwatch(ltmodel.model)
 

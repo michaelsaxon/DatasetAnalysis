@@ -1,4 +1,8 @@
 .DS_Store
+.vscode
+.vscode*
+training/.settings
+training/.settings*
 classifier*
 _*.tmp.npy
 __pycache__*
