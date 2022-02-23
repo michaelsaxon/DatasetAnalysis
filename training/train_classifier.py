@@ -216,22 +216,27 @@ class plNLIDataModule(pl.LightningDataModule):
 def main(n_gpus, n_epochs, basepath, trainfile, dataset, outfile, lr, biased, model_id, batch_size):
     wandb.login()
 
-    projectname = "Tmp"
+    projectname = "DatasetAnalysis-NLIbias"
     # generate wandb config details
     wandb.init(
         project = projectname,
+        entity="saxon",
         config = {
             "learning_rate" : lr,
             "batch_size" : batch_size,
             "epochs" : n_epochs,
             "dataset" : dataset,
             "model" : model_id,
-            "biased": biased
+            "biased": biased,
+            "lang": "en"
         }
     )
     # setting up global metrics
     wandb.define_metric('val/best_acc', summary="max")
 
+    # https://pytorch-lightning.readthedocs.io/en/latest/extensions/generated/pytorch_lightning.loggers.WandbLogger.html?highlight=wandblogger
+
+    wandb_logger = WandbLogger(log_model=True)
 
     print("Loading model...")
     model = RobertaForSequenceClassification.from_pretrained(model_id)
@@ -241,6 +246,8 @@ def main(n_gpus, n_epochs, basepath, trainfile, dataset, outfile, lr, biased, mo
     ltmodel = RobertaClassifier(model, lr)
     print("Init dataset...")
 
+    wandb_logger.watch(ltmodel.model, log_freq=500)
+
     nli_data = plNLIDataModule(tokenizer, basepath + "/" + trainfile, 
         batch_size = batch_size, biased = biased)
     path = basepath + "/ckpts"
@@ -248,12 +255,15 @@ def main(n_gpus, n_epochs, basepath, trainfile, dataset, outfile, lr, biased, mo
     print("Loading model...")
     checkpoint = ModelCheckpoint(path)
     print("Init trainer...")
+
     trainer = pl.Trainer(gpus = n_gpus, max_epochs = n_epochs, 
         checkpoint_callback = checkpoint, progress_bar_refresh_rate = 4,
         logger = wandb_logger)
     print("Training...")
     trainer.fit(ltmodel, nli_data)
     trainer.save_checkpoint(basepath + +"/" + outfile)
+
+    wandb_logger.unwatch(ltmodel.model)
 
     wandb.finish()
 

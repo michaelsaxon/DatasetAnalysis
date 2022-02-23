@@ -1,0 +1,8 @@
+click
+transformers
+pytorch_lightning
+wandb
+tqdm
+sklearn
+pandas
+matplotlib
