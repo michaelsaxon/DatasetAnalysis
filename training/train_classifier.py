@@ -54,6 +54,7 @@ LABEL_IDS = {}
 for i, label in enumerate(FULL_LABEL_MAP.keys()):
     LABEL_IDS[FULL_LABEL_MAP[label]] = i
 
+
 class RobertaClassifier(pl.LightningModule):
     def __init__(self, roberta_for_seq, learning_rate, loss_fct = torch.nn.CrossEntropyLoss()):
         super().__init__()
@@ -68,12 +69,9 @@ class RobertaClassifier(pl.LightningModule):
 
     def forward_loss_acc(self, batch):
         outputs = self(input_ids = batch['input_ids'], attention_mask=batch['attention_mask'])
-        targets = batch['labels']
+        targets = batch['labels'].squeeze()
         logits = outputs.logits
         preds = torch.max(logits, dim=-1).indices
-        print(logits.shape)
-        print(targets.shape)
-        print(logits)
         loss = self.loss_fct(logits, targets)
         acc = torch.sum(torch.eq(preds, targets)) / targets.shape[0]
         return preds, loss, acc
