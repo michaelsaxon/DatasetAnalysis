@@ -269,7 +269,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size):
     run_name = f"{dataset}-{model_id}-{lr}-{start_time_str}"
 
     print("Loading model...")
-    model = RobertaForSequenceClassification.from_pretrained(model_id)
+    model = RobertaForSequenceClassification.from_pretrained(model_id, num_labels=3)
     print("Loading tokenizer...")
     tokenizer = RobertaTokenizer.from_pretrained(model_id)
     print("Init litmodel...")
