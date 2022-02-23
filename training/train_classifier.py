@@ -1,10 +1,15 @@
 '''
-CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
-    --dataset S --batch_size 16
-
 CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
-    --dataset M --batch_size 16
+     --dataset S --batch_size 64 --biased
 
+CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
+     --dataset S --batch_size 64 --biased --extreme_bias
+
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
+     --dataset S --batch_size 64 --biased --extreme_bias --lr 0.00001
+
+CUDA_VISIBLE_DEVICES=4 python train_classifier.py --n_gpus 1 \
+     --dataset S --batch_size 64 --biased --extreme_bias --lr 0.00005
 
 '''
 
@@ -130,13 +135,14 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
 
 
 class NLIDataset(Dataset):
-    def __init__(self, sents, tokenizer, bias, bias_factor = 1):
+    def __init__(self, sents, tokenizer, bias, bias_factor = 1, s2only = False):
         # fuck it just store all the sentences in memory lmao
         self.sents = sents
         self.length = len(sents)
         self.tok = tokenizer
         self.bias = bias
         self.factor = bias_factor
+        self.s2only = s2only
 
     def __len__(self):
         return self.length
@@ -150,6 +156,11 @@ class NLIDataset(Dataset):
                 "input_ids" : torch.cat([self.factor * s1t["input_ids"], s2t["input_ids"][:,1:]], dim=1),
                 "attention_mask" : torch.cat([s1t["attention_mask"][:,0].unsqueeze(-1), 
                     0*s1t["attention_mask"][:,1:], s2t["attention_mask"][:,1:]], dim=1)
+            }
+        elif self.s2only:
+            datum = {
+                "input_ids" : s2t["input_ids"],
+                "attention_mask" : s2t["attention_mask"]
             }
         else:
             datum = {
@@ -174,7 +185,7 @@ def pad_seq_collate_fn(seq_of_samples):
 
 
 class plNLIDataModule(pl.LightningDataModule):
-    def __init__(self, tokenizer, basepath, dataset, batch_size, bias, bias_factor = 1):
+    def __init__(self, tokenizer, basepath, dataset, batch_size, bias, bias_factor = 1, s2only = False):
         super().__init__()
         self.tokenizer = tokenizer
         self.basepath = basepath
@@ -182,6 +193,7 @@ class plNLIDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.bias = bias
         self.bias_factor = bias_factor
+        self.s2only = s2only
 
     # Loads and splits the data into training, validation and test sets with a 60/20/20 split
     def prepare_data(self):
@@ -200,7 +212,7 @@ class plNLIDataModule(pl.LightningDataModule):
 
     # Load the training, validation and test sets in Pytorch Dataset objects
     def train_dataloader(self):
-        dataset = NLIDataset(self.train, self.tokenizer, self.bias, self.bias_factor)                   
+        dataset = NLIDataset(self.train, self.tokenizer, self.bias, self.bias_factor, self.s2only)                   
         train_data = DataLoader(dataset, 
             sampler = RandomSampler(dataset), 
             batch_size = self.batch_size,
@@ -209,7 +221,7 @@ class plNLIDataModule(pl.LightningDataModule):
         return train_data
 
     def val_dataloader(self):
-        dataset = NLIDataset(self.valid, self.tokenizer, self.bias, self.bias_factor)
+        dataset = NLIDataset(self.valid, self.tokenizer, self.bias, self.bias_factor, self.s2only)
         val_data = DataLoader(dataset, 
             batch_size = self.batch_size,
             collate_fn = pad_seq_collate_fn,
@@ -217,7 +229,7 @@ class plNLIDataModule(pl.LightningDataModule):
         return val_data
 
     def test_dataloader(self):
-        dataset = NLIDataset(self.test, self.tokenizer, self.bias, self.bias_factor)
+        dataset = NLIDataset(self.test, self.tokenizer, self.bias, self.bias_factor, self.s2only)
         test_data = DataLoader(dataset, 
             batch_size = self.batch_size,
             collate_fn = pad_seq_collate_fn,
@@ -240,7 +252,8 @@ class plNLIDataModule(pl.LightningDataModule):
 @click.option('--batch_size', default=48)
 @click.option('--biased', is_flag=True)
 @click.option('--extreme_bias', is_flag=True)
-def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bias):
+@click.option('--s2only', is_flag=True)
+def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bias, s2only):
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir"])
 
     wandb.login()
@@ -249,6 +262,12 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     
     start_time_str = time.strftime('%y%m%d-%H%M')
 
+    if s2only:
+        extreme_bias = False
+        biased = True
+    if extreme_bias:
+        biased = True
+    
     # generate wandb config details
     wandb.init(
         project = projectname,
@@ -262,7 +281,8 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
             "biased": biased,
             "extreme_bias" : extreme_bias,
             "lang": "en",
-            "start" : start_time_str
+            "start" : start_time_str,
+            "s2only" : s2only
         }
     )
     # setting up global metrics
@@ -275,6 +295,8 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
         run_name = f"Bias-{run_name}"
     if extreme_bias:
         run_name = f"Extreme{run_name}"
+    if s2only:
+        run_name = f"S2only{run_name}"
 
     print("Loading model...")
     model = RobertaForSequenceClassification.from_pretrained(model_id, num_labels=3)
@@ -290,7 +312,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
         factor = 0
     else:
         factor = 1
-    nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor)
+    nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor, s2only)
 
     run_path = PurePath(dir_settings["data_save_dir"] + "/" + run_name)
     lazymkdir(run_path)
