@@ -1,6 +1,11 @@
 '''
 CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
-    --dataset snli --batch_size 16
+    --dataset S --batch_size 16
+
+CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
+    --dataset M --batch_size 16
+
+
 '''
 
 import torch
@@ -94,9 +99,9 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
     ds, r, sentencemap = VALID_DATASETS[dataset]
 
     registered_path = {
-        'snli': f'snli_1.0_{partition}.jsonl',
-        'mnli': f'multinli_1.0_{partition}.jsonl',
-        'anli': f'R{r}/{partition}.jsonl'
+        'snli': f'snli_1.0/snli_1.0_{partition}.jsonl',
+        'mnli': f'multinli_1.0/multinli_1.0_{partition}.jsonl',
+        'anli': f'anli_v1.0/R{r}/{partition}.jsonl'
     }
 
     with open(PurePath(basepath + "/" + registered_path[ds])) as f:
