@@ -174,13 +174,14 @@ def pad_seq_collate_fn(seq_of_samples):
 
 
 class plNLIDataModule(pl.LightningDataModule):
-    def __init__(self, tokenizer, basepath, dataset, batch_size, bias):
+    def __init__(self, tokenizer, basepath, dataset, batch_size, bias, bias_factor = 1):
         super().__init__()
         self.tokenizer = tokenizer
         self.basepath = basepath
         self.dataset = dataset
         self.batch_size = batch_size
         self.bias = bias
+        self.bias_factor = bias_factor
 
     # Loads and splits the data into training, validation and test sets with a 60/20/20 split
     def prepare_data(self):
@@ -199,7 +200,7 @@ class plNLIDataModule(pl.LightningDataModule):
 
     # Load the training, validation and test sets in Pytorch Dataset objects
     def train_dataloader(self):
-        dataset = NLIDataset(self.train, self.tokenizer, self.bias)                   
+        dataset = NLIDataset(self.train, self.tokenizer, self.bias, self.bias_factor)                   
         train_data = DataLoader(dataset, 
             sampler = RandomSampler(dataset), 
             batch_size = self.batch_size,
@@ -208,18 +209,16 @@ class plNLIDataModule(pl.LightningDataModule):
         return train_data
 
     def val_dataloader(self):
-        dataset = NLIDataset(self.valid, self.tokenizer, self.bias)
+        dataset = NLIDataset(self.valid, self.tokenizer, self.bias, self.bias_factor)
         val_data = DataLoader(dataset, 
-            sampler = RandomSampler(dataset), 
             batch_size = self.batch_size,
             collate_fn = pad_seq_collate_fn,
             num_workers = 16)
         return val_data
 
     def test_dataloader(self):
-        dataset = NLIDataset(self.test, self.tokenizer, self.bias)
+        dataset = NLIDataset(self.test, self.tokenizer, self.bias, self.bias_factor)
         test_data = DataLoader(dataset, 
-            sampler = RandomSampler(dataset), 
             batch_size = self.batch_size,
             collate_fn = pad_seq_collate_fn,
             num_workers = 16)
@@ -240,14 +239,15 @@ class plNLIDataModule(pl.LightningDataModule):
 @click.option('--model_id', default="roberta-large")
 @click.option('--batch_size', default=48)
 @click.option('--biased', is_flag=True)
-def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size):
+@click.option('--extreme_bias', is_flag=True)
+def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bias):
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir"])
 
     wandb.login()
 
     projectname = "DatasetAnalysis-NLIbias"
     
-    start_time_str = time.strftime('%y%m%d:%H:%M')
+    start_time_str = time.strftime('%y%m%d-%H%M')
 
     # generate wandb config details
     wandb.init(
@@ -270,6 +270,10 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size):
     wandb_logger = WandbLogger(log_model=True)
 
     run_name = f"{dataset}-{model_id}-{lr}-{start_time_str}"
+    if biased:
+        run_name = f"Bias-{run_name}"
+    if extreme_bias:
+        run_name = f"Extreme{run_name}"
 
     print("Loading model...")
     model = RobertaForSequenceClassification.from_pretrained(model_id, num_labels=3)
@@ -281,7 +285,11 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size):
 
     wandb_logger.watch(ltmodel.model, log_freq=500)
 
-    nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased)
+    if extreme_bias:
+        factor = 0
+    else:
+        factor = 1
+    nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor)
 
     run_path = PurePath(dir_settings["data_save_dir"] + "/" + run_name)
     lazymkdir(run_path)
