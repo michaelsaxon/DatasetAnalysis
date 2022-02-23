@@ -308,8 +308,6 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     print("Training...")
     trainer.fit(ltmodel, nli_data)
 
-    wandb_logger.unwatch(ltmodel.model)
-
     wandb.finish()
 
 
