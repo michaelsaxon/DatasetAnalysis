@@ -260,6 +260,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
             "dataset" : dataset,
             "model" : model_id,
             "biased": biased,
+            "extreme_bias" : extreme_bias,
             "lang": "en",
             "start" : start_time_str
         }
