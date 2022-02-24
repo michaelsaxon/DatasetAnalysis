@@ -2,45 +2,7 @@
 CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
      --dataset S --batch_size 64 --biased
 
-CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
-     --dataset S --batch_size 64 --biased --extreme_bias
-
-CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
-     --dataset S --batch_size 64 --biased --extreme_bias --lr 0.00001
-
-CUDA_VISIBLE_DEVICES=4 python train_classifier.py --n_gpus 1 \
-     --dataset S --batch_size 64 --biased --extreme_bias --lr 0.00005
-
-CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
-     --dataset S --batch_size 128 --s2only
-
-CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
-     --dataset S --batch_size 128 --s2only --lr 0.00001
-
-CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
-     --dataset S --batch_size 128 --s2only --lr 0.000005 --n_epochs 10
-
-CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
-     --dataset A1 --batch_size 36 --s2only --lr 0.00001
-
-CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
-     --dataset A1 --batch_size 36 --s2only --lr 0.000005
-
-CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
-     --dataset A2 --batch_size 36 --s2only --lr 0.00001
-
-# todo
-
-CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
-     --dataset A2 --batch_size 36 --s2only --lr 0.000005
-
-CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
-     --dataset A3 --batch_size 36 --s2only --lr 0.00001
-
-CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
-     --dataset A3 --batch_size 36 --s2only --lr 0.000005
-
-
+SEE RECIPES.txt
 '''
 
 from email.policy import default
@@ -163,7 +125,8 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
         s1 = line[sentencemap[0]]
         s2 = line[sentencemap[1]]
         if label_id:
-            label = LABEL_IDS[label]
+            # defaults to neutral
+            label = LABEL_IDS.get(label, LABEL_IDS["neutral"])
         sents.append((s1, s2, label))
     
     return sents
