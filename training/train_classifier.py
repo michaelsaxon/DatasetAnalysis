@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader, TensorDataset, random_split, RandomSamp
 import numpy as np
 
 import click
-from transformers import RobertaTokenizer, RobertaForSequenceClassification
+from transformers import RobertaTokenizer, RobertaForSequenceClassification, BertTokenizer, BertForSequenceClassification
 from transformers import AdamW
 import torch.nn.functional as F
 import pytorch_lightning as pl
@@ -323,13 +323,24 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     if s2only:
         run_name = f"S2only{run_name}"
 
-    print("Loading model...")
-    model = RobertaForSequenceClassification.from_pretrained(model_id, num_labels=3)
-    print("Loading tokenizer...")
-    tokenizer = RobertaTokenizer.from_pretrained(model_id)
-    print("Init litmodel...")
-    ltmodel = RobertaClassifier(model, lr)
-    print("Init dataset...")
+    if lang == "en":
+        print("Loading model...")
+        model = RobertaForSequenceClassification.from_pretrained(model_id, num_labels=3)
+        print("Loading tokenizer...")
+        tokenizer = RobertaTokenizer.from_pretrained(model_id)
+        print("Init litmodel...")
+        ltmodel = RobertaClassifier(model, lr)
+        print("Init dataset...")
+    elif lang == "zh":
+        print("Loading model...")
+        model = BertForSequenceClassification.from_pretrained(model_id, num_labels=3)
+        print("Loading tokenizer...")
+        tokenizer = BertTokenizer.from_pretrained(model_id)
+        print("Init litmodel...")
+        ltmodel = RobertaClassifier(model, lr)
+        print("Init dataset...")
+    else:
+        raise NotImplementedError
 
     wandb_logger.watch(ltmodel.model, log_freq=500)
 
