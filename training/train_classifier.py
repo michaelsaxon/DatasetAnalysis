@@ -36,7 +36,8 @@ VALID_DATASETS = {
     "A1": ("anli", 1, ["context", "hypothesis"]),
     "A2": ("anli", 2, ["context", "hypothesis"]),
     "A3": ("anli", 3, ["context", "hypothesis"]),
-    "M" : ("mnli", None, ["sentence1", "sentence2"])
+    "M" : ("mnli", None, ["sentence1", "sentence2"]),
+    "OC" : ("ocnli", None, ["sentence1", "sentence2"])
 }
 
 FULL_LABEL_MAP = {
@@ -122,7 +123,8 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
     registered_path = {
         'snli': f'snli_1.0/snli_1.0_{partition}.jsonl',
         'mnli': f'multinli_1.0/multinli_1.0_{partition}.jsonl',
-        'anli': f'anli_v1.0/R{r}/{partition}.jsonl'
+        'anli': f'anli_v1.0/R{r}/{partition}.jsonl',
+        'ocnli': f'OCNLI/data/ocnli/{partition}.json'
     }
 
     with open(PurePath(basepath + "/" + registered_path[ds])) as f:
@@ -265,7 +267,7 @@ class plNLIDataModule(pl.LightningDataModule):
 @click.option('--n_gpus', default=1, help='number of gpus')
 @click.option('--n_epochs', default=25, help='max number of epochs')
 @click.option('--dataset', default="snli")
-@click.option('--lr', default=2e-5)
+@click.option('--lr', default=1e-5)
 @click.option('--model_id', default="roberta-large")
 @click.option('--batch_size', default=48)
 @click.option('--biased', is_flag=True)
@@ -286,6 +288,11 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     if extreme_bias:
         biased = True
     
+    if dataset == "OC":
+        lang = "zh"
+    else:
+        lang = "en"
+
     # generate wandb config details
     wandb.init(
         project = projectname,
@@ -298,7 +305,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
             "model" : model_id,
             "biased": biased,
             "extreme_bias" : extreme_bias,
-            "lang": "en",
+            "lang": lang,
             "start" : start_time_str,
             "s2only" : s2only
         }

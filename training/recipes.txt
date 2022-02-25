@@ -51,3 +51,12 @@ CUDA_VISIBLE_DEVICES=4 python train_classifier.py --n_gpus 1 \
 
 CUDA_VISIBLE_DEVICES=5 python train_classifier.py --n_gpus 1 \
      --dataset A2 --batch_size 36 --n_epochs 25 --lr 0.00001
+
+
+CUDA_VISIBLE_DEVICES=6 python train_classifier.py --n_gpus 1 \
+     --dataset SICK --batch_size 36 --n_epochs 25 --lr 0.00001
+
+
+CUDA_VISIBLE_DEVICES=6 python train_classifier.py --n_gpus 1 \
+     --dataset OC --model_id uer/chinese_roberta_L-12_H-768 \
+     --batch_size 36 --n_epochs 25
