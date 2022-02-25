@@ -140,7 +140,6 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
         elif dataset == "M":
             label = line["gold_label"]
         elif dataset == "OC":
-            print(line)
             label = line["label"].lower()
         else:
             label = FULL_LABEL_MAP[line["label"]]
