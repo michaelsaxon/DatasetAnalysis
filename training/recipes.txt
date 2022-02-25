@@ -36,3 +36,18 @@ CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
 
 CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
      --dataset A3 --batch_size 36 --s2only --lr 0.000005
+
+
+# training classifier only
+
+CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
+     --dataset S --batch_size 36 --n_epochs 10 --lr 0.000005
+
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
+     --dataset A3 --batch_size 36 --n_epochs 10 --lr 0.00001
+
+CUDA_VISIBLE_DEVICES=4 python train_classifier.py --n_gpus 1 \
+     --dataset A1 --batch_size 36 --n_epochs 12 --lr 0.00001
+
+CUDA_VISIBLE_DEVICES=5 python train_classifier.py --n_gpus 1 \
+     --dataset A2 --batch_size 36 --n_epochs 25 --lr 0.00001
