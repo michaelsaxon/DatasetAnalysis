@@ -99,6 +99,23 @@ class RobertaClassifier(pl.LightningModule):
         return preds
 
 
+def load_sick_data(basepath, label_id = True):
+    path_affix = "SICK/SICK.txt"
+    with open(PurePath(basepath + path_affix)) as f:
+        lines = f.readlines()[1:]
+    # keys will be TRAIN TRIAL TEST
+    lines_sorted = defaultdict(list)
+    for line in lines:
+        line = line.strip().split("\t")
+        partition = line[-1]
+        sentence_a = line[1]
+        sentence_b = line[2]
+        # labels are allcaps vers of others
+        label = LABEL_IDS.get(line[3].lower(), LABEL_IDS["neutral"])
+        lines_sorted[partition].append((sentence_a, sentence_b, label))
+    return lines_sorted["TRAIN"], lines_sorted["TRIAL"], lines_sorted["TEST"]
+
+
 def load_nli_data(basepath, dataset, partition, label_id = True):
     ds, r, sentencemap = VALID_DATASETS[dataset]
 
@@ -196,9 +213,12 @@ class plNLIDataModule(pl.LightningDataModule):
     # Loads and splits the data into training, validation and test sets with a 60/20/20 split
     def prepare_data(self):
         print("Preparing data...")
-        self.train = load_nli_data(self.basepath, self.dataset, "train")
-        self.valid = load_nli_data(self.basepath, self.dataset, "dev")
-        self.test = load_nli_data(self.basepath, self.dataset, "test")
+        if self.dataset == "SICK":
+            self.train, self.valid, self.test = load_sick_data(self.basepath)
+        else:
+            self.train = load_nli_data(self.basepath, self.dataset, "train")
+            self.valid = load_nli_data(self.basepath, self.dataset, "dev")
+            self.test = load_nli_data(self.basepath, self.dataset, "test")
         #print("Preparing input vectors...")
 
     # deprecated, for now I'm doing in-time tokenization with NLIDataset
