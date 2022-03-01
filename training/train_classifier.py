@@ -275,7 +275,7 @@ def choose_load_model_tokenizer(model_id, dataset):
     else:
         lang = "en"
     if lang == "en":
-        return load_model_tokenizer(model_id, RobertaForSequenceClassification, RobertaTokenizer, lang)
+        return load_model_tokenizer(model_id, RobertaForSequenceClassification, RobertaTokenizer)
     elif lang == "zh":
         return load_model_tokenizer(model_id, BertForSequenceClassification, BertTokenizer)
     else:
