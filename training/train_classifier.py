@@ -262,6 +262,25 @@ class plNLIDataModule(pl.LightningDataModule):
 # pre-encode using the tokenizer into pt files first
 #def encode_sentences(tokenizer, source_sentences, return_tensors="pt"):
 
+def load_model_tokenizer(model_id, model_class, tokenizer_class, num_labels=3):
+    print("Loading model...")
+    model = model_class.from_pretrained(model_id, num_labels=num_labels)
+    print("Loading tokenizer...")
+    tokenizer = tokenizer_class.from_pretrained(model_id)
+    return model, tokenizer
+
+def choose_load_model_tokenizer(model_id, dataset):
+    if dataset == "OC":
+        lang = "zh"
+    else:
+        lang = "en"
+    if lang == "en":
+        return load_model_tokenizer(model_id, RobertaForSequenceClassification, RobertaTokenizer, lang)
+    elif lang == "zh":
+        return load_model_tokenizer(model_id, BertForSequenceClassification, BertTokenizer)
+    else:
+        raise NotImplementedError
+
 
 #@click.argument('name')
 # abs_split.txt final_lines.txt
@@ -325,24 +344,11 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     if s2only:
         run_name = f"S2only{run_name}"
 
-    if lang == "en":
-        print("Loading model...")
-        model = RobertaForSequenceClassification.from_pretrained(model_id, num_labels=3)
-        print("Loading tokenizer...")
-        tokenizer = RobertaTokenizer.from_pretrained(model_id)
-        print("Init litmodel...")
-        ltmodel = RobertaClassifier(model, lr)
-        print("Init dataset...")
-    elif lang == "zh":
-        print("Loading model...")
-        model = BertForSequenceClassification.from_pretrained(model_id, num_labels=3)
-        print("Loading tokenizer...")
-        tokenizer = BertTokenizer.from_pretrained(model_id)
-        print("Init litmodel...")
-        ltmodel = RobertaClassifier(model, lr)
-        print("Init dataset...")
-    else:
-        raise NotImplementedError
+    model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
+
+    print("Init litmodel...")
+    ltmodel = RobertaClassifier(model, lr)
+    print("Init dataset...")
 
     wandb_logger.watch(ltmodel.model, log_freq=500)
 

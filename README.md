@@ -45,8 +45,8 @@ You will want to set up a working directory where trained models, precomp'd embe
 ## TODOs
 
 - [x] complete basic implementation
-- [ ] Finish and check requirements.txt
-- [ ] Implement working dir stuff as 
+- [x] Finish and check requirements.txt
+- [x] Implement working dir stuff as 
 - [ ] Frequency list computation for levels of n-gram
 - [ ] Dataset filtration code (x domain changing)
 - [ ] Compute entropy for dataset, classes, etc
