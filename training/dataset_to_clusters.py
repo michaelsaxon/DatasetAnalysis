@@ -60,7 +60,9 @@ def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, biastype = (False, 
 # hack hack hack disgusting
 def cuda_dict(tensor_dict):
     for key in tensor_dict.keys():
+        print(key)
         tensor_dict[key].cuda()
+        print(tensor_dict[key].device)
 
 ## implement each step in the eval, pca, cluster pipeline
 # run the ltmodel to get the embeddings
