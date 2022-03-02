@@ -8,7 +8,7 @@ import click
 from sklearn import cluster
 
 from train_classifier import *
-from manage_settings import get_write_settings, read_models_csv
+from manage_settings import get_write_settings, read_models_csv, lazymkdir
 
 from collections import defaultdict
 
@@ -37,6 +37,22 @@ def gen_cache_fit(fname, data, genfn, skip = False, loadfn = _pkload, savefn = _
             obj = genfn(data)
             savefn(obj, fname)
     return obj
+
+def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, biastype = (False, False, False)):
+    base = lazymkdir(intermed_comp_dir_base)
+    biased, extremebias, s2only = biastype
+    if s2only:
+        biastype = "s2only"
+    elif extremebias:
+        biastype = "extreme"
+    elif biased:
+        biastype = "biased"
+    else:
+        biastype = "normal"
+    # for now I've only implemented test set
+    foldername = PurePath(base + f"/{dataset}-test-{biastype}/")
+    lazymkdir(foldername)
+    return str(foldername)
 
 
 ## implement each step in the eval, pca, cluster pipeline
@@ -79,27 +95,38 @@ def label_lists_to_arrays(label_lists):
     return np.stack(X_list), np.array(labels)
 
 # this is a bundle of the two prev functions to interface with auto caching
-def get_numpy_embs(nli_data, ltmodel):
-    xname, lname = ...
-    if os.path.exists(xname) and os.path.exists(lname):
-        embs = np.load(xname)
-        labs = np.load(xname)
-    else:
+def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None):
+    if tmp_save_dir == None:
         embs, labs = label_lists_to_arrays(group_by_label(collect_embeddings(nli_data, ltmodel)))
-        np.save(xname, embs)
-        np.save(lname, labs)
+        return embs, labs
+    else:
+        xname = PurePath(tmp_save_dir + "/embs.npy")
+        lname = PurePath(tmp_save_dir + "/labs.npy")
+        if os.path.exists(xname) and os.path.exists(lname):
+            embs = np.load(xname)
+            labs = np.load(xname)
+        else:
+            embs, labs = label_lists_to_arrays(group_by_label(collect_embeddings(nli_data, ltmodel)))
+            np.save(xname, embs)
+            np.save(lname, labs)
     return embs, labs
 
 # map the label_lists dict into pca-transformed embeddings
-def pca_fit_transform(embs, n_components=50):
-    pca_fname = ...
-    pca_model = gen_cache_fit(pca_fname, embs, PCA(n_components=n_components))
+def pca_fit_transform(embs, n_components=50, tmp_save_dir = None):
+    if tmp_save_dir == None:
+        skip = True
+        tmp_save_dir = ""
+    pca_fname = PurePath(tmp_save_dir + f"/pca-{n_components}.pckl")
+    pca_model = gen_cache_fit(pca_fname, embs, PCA(n_components=n_components), skip=skip)
     return pca_model.transform(embs)
 
 # produce the clustering
-def kmeans_fit_transform(embs, n_clusters=50):
-    kms_fname = ...
-    kms_model = gen_cache_fit(kms_fname, embs, KMeans(n_clusters=n_clusters, verbose=True, init='k-means++'))
+def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None):
+    if tmp_save_dir == None:
+        skip = True
+        tmp_save_dir = ""
+    kms_fname = PurePath(tmp_save_dir + f"/kms-{n_clusters}.pckl")
+    kms_model = gen_cache_fit(kms_fname, embs, KMeans(n_clusters=n_clusters, verbose=True, init='k-means++'), skip=skip)
     return kms_model.predict(embs)
 
 
@@ -152,8 +179,11 @@ def peco_score(cluster_norms, n_steps = 20):
     return np.sum(peco_y) / n_steps
 
 # project a set into tsne for plotting
-def tsne_fit_transform(embs, perp):
-    tsne_fname = ...
+def tsne_fit_transform(embs, perp, tmp_save_dir = None):
+    if tmp_save_dir == None:
+        skip = True
+        tmp_save_dir = ""    
+    tsne_fname = PurePath(tmp_save_dir + f"/tsne-{perp}.np")
     embs_tsne = TSNE(perplexity=perp, verbose=2).fit_transform(embs)
     np.save(tsne_fname, embs_tsne)
     return embs_tsne
@@ -182,14 +212,17 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     else:
         factor = 1
 
-    dir_settings = get_write_settings(["data_save_dir", "dataset_dir"])
+    dir_settings = get_write_settings(["data_save_dir", "dataset_dir", "intermed_comp_dir_base"])
     
+    intermed_comp_dir = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
+        (biased, extreme_bias, s2only))
+
     nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor, s2only)
 
     # collect lists of numpy arrays
-    embs, labs = get_numpy_embs(nli_data, ltmodel)
+    embs, labs = get_numpy_embs(nli_data, ltmodel, tmp_save_dir=intermed_comp_dir)
     # pca transformed embeddings
-    embs_pca = pca_fit_transform(embs)
+    embs_pca = pca_fit_transform(embs, tmp_save_dir=intermed_comp_dir)
     # cluster-labeled embeddings
     embs_cll = kmeans_fit_transform(embs_pca)
     ## evaluate the PECO measure
@@ -204,8 +237,12 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     # generate AUC plots
     # generate T-SNE plot
     print("##### REPORT #####")
-    print("peco_xH,peco_L2,thresh_xH_25,thresh_L2_25")
-    print(f"{peco_xH:.4f},{peco_L2:.4f},{threshscore_xH_25:.4f},{threshscore_L2_25:.4f}")
+    lines = ["peco_xH,peco_L2,thresh_xH_25,thresh_L2_25", 
+        f"{peco_xH:.4f},{peco_L2:.4f},{threshscore_xH_25:.4f},{threshscore_L2_25:.4f}"]
+    with open(PurePath(intermed_comp_dir + "/results.csv", "w")) as f:
+        for line in lines:
+            print(line)
+            f.write(line + "\n")
 
 if __name__ == "__main__":
     main()

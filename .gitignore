@@ -15,3 +15,5 @@ wandb
 wandb*
 training/wandb
 training/wandb*
+intermed_comp*
+intermed_comp/*
