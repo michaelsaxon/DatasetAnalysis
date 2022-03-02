@@ -20,6 +20,8 @@ import pickle
 
 import numpy as np
 
+from tqdm import tqdm
+
 # loading and saving utils for abstract file loading
 def _pksave(obj, fname):
     pickle.dump(obj, open(fname, "wb"))
@@ -59,7 +61,8 @@ def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, biastype = (False, 
 # run the ltmodel to get the embeddings
 def collect_embeddings(nli_dataset, ltmodel):
     # maybe cuda if we want
-    for i, batch in enumerate(nli_dataset.test_dataloader()):
+    print("Collecting embeddings...")
+    for batch in tqdm(nli_dataset.test_dataloader()):
         batch_embs = ltmodel.forward_get_embs(batch)
         yield batch_embs, batch["labels"]
 
@@ -113,6 +116,7 @@ def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None):
 
 # map the label_lists dict into pca-transformed embeddings
 def pca_fit_transform(embs, n_components=50, tmp_save_dir = None):
+    print("Performing PCA reduction...")
     if tmp_save_dir == None:
         skip = True
         tmp_save_dir = ""
@@ -122,6 +126,7 @@ def pca_fit_transform(embs, n_components=50, tmp_save_dir = None):
 
 # produce the clustering
 def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None):
+    print("Performing KMeans fitting...")    
     if tmp_save_dir == None:
         skip = True
         tmp_save_dir = ""
