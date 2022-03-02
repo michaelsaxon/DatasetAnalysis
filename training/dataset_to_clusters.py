@@ -154,7 +154,7 @@ def cluster_preds_to_dists(embs_cll, labs, n_clusters):
     for i in range(embs_cll.shape[0]):
         cluster_counts[embs_cll[i]][labs[i]] += 1
     cluster_counts = np.stack(cluster_counts)
-    return cluster_counts / cluster_counts.sum(-1)
+    return cluster_counts / np.expand_dims(cluster_counts.sum(-1),1)
 
 # discrete clusterwise cross entropy between local dist and balanced dist
 def cluster_xH(cluster_dists, balance = np.array([.333334,.333333,.333333])):
