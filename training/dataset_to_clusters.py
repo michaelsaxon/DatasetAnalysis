@@ -27,7 +27,7 @@ def _pksave(obj, fname):
     pickle.dump(obj, open(fname, "wb"))
 
 def _pkload(fname):
-    pickle.load(open(fname, "rb"))
+    return pickle.load(open(fname, "rb"))
 
 def gen_cache_fit(fname, data, genfn, skip = False, loadfn = _pkload, savefn = _pksave):
     if skip:
@@ -130,8 +130,6 @@ def pca_fit_transform(embs, n_components=50, tmp_save_dir = None):
         skip = False
     pca_fname = PurePath(tmp_save_dir + f"/pca-{n_components}.pckl")
     pca_model = gen_cache_fit(pca_fname, embs, PCA(n_components=n_components).fit, skip=skip)
-    print(type(pca_model))
-    print(pca_model)
     return pca_model.transform(embs)
 
 # produce the clustering
