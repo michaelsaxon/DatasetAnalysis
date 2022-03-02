@@ -262,7 +262,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     print("##### REPORT #####")
     lines = ["peco_xH,peco_L2,thresh_xH_25,thresh_L2_25", 
         f"{peco_xH:.4f},{peco_L2:.4f},{threshscore_xH_25:.4f},{threshscore_L2_25:.4f}"]
-    with open(PurePath(intermed_comp_dir + "/results.csv", "w")) as f:
+    with open(PurePath(intermed_comp_dir + "/results.csv"), "w") as f:
         for line in lines:
             print(line)
             f.write(line + "\n")
