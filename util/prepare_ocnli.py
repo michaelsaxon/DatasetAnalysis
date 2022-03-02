@@ -7,11 +7,11 @@ import shutil
 def main(ocdir):
     assert os.path.isdir(ocdir)
     # mv test.json test_unlabeled.json
-    shutil.move(ocdir + "/test.json", ocdir + "test_unlabeled.json")
+    shutil.move(ocdir + "/test.json", ocdir + "/test_unlabeled.json")
     # mv dev.json test.json
-    shutil.move(ocdir + "/dev.json", ocdir + "test.json")
+    shutil.move(ocdir + "/dev.json", ocdir + "/test.json")
     # cp train.3k.json dev.json
-    shutil.copy(ocdir + "/train.3k.json", ocdir + "dev.json")
+    shutil.copy(ocdir + "/train.3k.json", ocdir + "/dev.json")
     # remove overlapping 3k sentences from 50k
     train_lines = open(ocdir + "/train.50k.json", "r").readlines()
     dev_lines = open(ocdir + "/dev.json", "r").readlines()
