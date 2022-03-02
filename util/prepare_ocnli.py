@@ -23,3 +23,7 @@ def main(ocdir):
             train_lines.remove(line)
     with open(ocdir + "/train.json", "w") as f:
         f.writelines([head] + train_lines)
+
+
+if __name__ == "__main__":
+    main()
