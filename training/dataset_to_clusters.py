@@ -244,6 +244,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
 
     # collect lists of numpy arrays
     embs, labs = get_numpy_embs(nli_data, ltmodel, tmp_save_dir=intermed_comp_dir)
+    print(labs)
     # pca transformed embeddings
     embs_pca = pca_fit_transform(embs, tmp_save_dir=intermed_comp_dir)
     # cluster-labeled embeddings
