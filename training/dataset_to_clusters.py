@@ -157,8 +157,8 @@ def cluster_preds_to_dists(embs_cll, labs, n_clusters):
     return cluster_counts / np.expand_dims(cluster_counts.sum(-1),1)
 
 # discrete clusterwise cross entropy between local dist and balanced dist
-def cluster_xH(cluster_dists, balance = np.array([.333334,.333333,.333333])):
-    x = np.log2(cluster_dists)
+def cluster_xH(cluster_dists, balance = np.array([.333334,.333333,.333333]), eps = 1e-30):
+    x = np.log2(cluster_dists + np.eps)
     print(x)
     x = x * balance
     print(x)
