@@ -101,6 +101,8 @@ def label_lists_to_arrays(label_lists):
     for i, key in enumerate(label_lists.keys()):
         X_list += label_lists[key]
         labels += [i] * len(label_lists[key])
+    print(X_list[0].shape)
+    print(X_list[1].shape)
     return np.concatenate(X_list, axis=0), np.array(labels)
 
 # this is a bundle of the two prev functions to interface with auto caching
