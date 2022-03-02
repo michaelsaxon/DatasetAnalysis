@@ -172,7 +172,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     if pretrained_path != "":
         checkpoint = torch.load(pretrained_path)
         _, tokenizer = choose_load_model_tokenizer(model_id, dataset)
-        ltmodel = RobertaClassifier.load_from_checkpoint(checkpoint['state_dict'])
+        ltmodel = RobertaClassifier.load_from_checkpoint(checkpoint)
     else:
         model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
         ltmodel = RobertaClassifier(model, learning_rate=0)
