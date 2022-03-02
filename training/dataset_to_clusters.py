@@ -159,9 +159,7 @@ def cluster_preds_to_dists(embs_cll, labs, n_clusters):
 # discrete clusterwise cross entropy between local dist and balanced dist
 def cluster_xH(cluster_dists, balance = np.array([.333334,.333333,.333333]), eps = 1e-30):
     x = np.log2(cluster_dists + eps)
-    print(x)
     x = x * balance
-    print(x)
     return - x.sum(-1)
 
 # compute clusterwise L2 norm between local dist and balanced dist
@@ -254,9 +252,9 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     ## evaluate the PECO measure
     # get the cluster cross entropies
     cluster_dists = cluster_preds_to_dists(embs_cll, labs, n_clusters = 50)
-    print(cluster_dists)
     clusters_xHs = cluster_xH(cluster_dists)
     clusters_L2 = cluster_L2(cluster_dists)
+    print(clusters_xHs)
     peco_xH = peco_score(clusters_xHs)
     peco_L2 = peco_score(clusters_L2)
     threshscore_xH_25 = threshold_score(clusters_xHs, .25)
