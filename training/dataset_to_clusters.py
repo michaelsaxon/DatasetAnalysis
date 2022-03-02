@@ -113,7 +113,7 @@ def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None):
         lname = PurePath(tmp_save_dir + "/labs.npy")
         if os.path.exists(xname) and os.path.exists(lname):
             embs = np.load(xname)
-            labs = np.load(xname)
+            labs = np.load(lname)
         else:
             embs, labs = label_lists_to_arrays(group_by_label(collect_embeddings(nli_data, ltmodel)))
             np.save(xname, embs)
@@ -150,8 +150,6 @@ def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None):
 def cluster_preds_to_dists(embs_cll, labs, n_clusters):
     cluster_counts = [np.array([0,0,0]) for i in range(n_clusters)]
     for i in range(embs_cll.shape[0]):
-        print(embs_cll[i])
-        print(labs[i])
         cluster_counts[embs_cll[i]][labs[i]] += 1
     cluster_counts = np.stack(cluster_counts)
     return cluster_counts / cluster_counts.sum(-1).unsqueeze(1)
@@ -244,7 +242,6 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
 
     # collect lists of numpy arrays
     embs, labs = get_numpy_embs(nli_data, ltmodel, tmp_save_dir=intermed_comp_dir)
-    print(labs)
     # pca transformed embeddings
     embs_pca = pca_fit_transform(embs, tmp_save_dir=intermed_comp_dir)
     # cluster-labeled embeddings
