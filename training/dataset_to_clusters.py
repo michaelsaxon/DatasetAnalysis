@@ -126,6 +126,8 @@ def pca_fit_transform(embs, n_components=50, tmp_save_dir = None):
     if tmp_save_dir == None:
         skip = True
         tmp_save_dir = ""
+    else:
+        skip = False
     pca_fname = PurePath(tmp_save_dir + f"/pca-{n_components}.pckl")
     pca_model = gen_cache_fit(pca_fname, embs, PCA(n_components=n_components), skip=skip)
     return pca_model.transform(embs)
@@ -136,6 +138,8 @@ def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None):
     if tmp_save_dir == None:
         skip = True
         tmp_save_dir = ""
+    else:
+        skip = False
     kms_fname = PurePath(tmp_save_dir + f"/kms-{n_clusters}.pckl")
     kms_model = gen_cache_fit(kms_fname, embs, KMeans(n_clusters=n_clusters, verbose=True, init='k-means++'), skip=skip)
     return kms_model.predict(embs)
@@ -193,7 +197,9 @@ def peco_score(cluster_norms, n_steps = 20):
 def tsne_fit_transform(embs, perp, tmp_save_dir = None):
     if tmp_save_dir == None:
         skip = True
-        tmp_save_dir = ""    
+        tmp_save_dir = ""
+    else:
+        skip = False
     tsne_fname = PurePath(tmp_save_dir + f"/tsne-{perp}.np")
     embs_tsne = TSNE(perplexity=perp, verbose=2).fit_transform(embs)
     np.save(tsne_fname, embs_tsne)
