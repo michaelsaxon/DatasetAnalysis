@@ -168,14 +168,14 @@ def tsne_fit_transform(embs, perp):
 @click.option('--s2only', is_flag=True)
 def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     model_id, pretrained_path = read_models_csv(dataset)
+    model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
+    ltmodel = RobertaClassifier(model, learning_rate=0)
     print("Init litmodel...")
     if pretrained_path != "":
         checkpoint = torch.load(pretrained_path)
-        _, tokenizer = choose_load_model_tokenizer(model_id, dataset)
-        ltmodel = RobertaClassifier.load_from_checkpoint(checkpoint)
+        ltmodel = ltmodel.load_from_checkpoint(checkpoint_path=checkpoint)
     else:
         model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
-        ltmodel = RobertaClassifier(model, learning_rate=0)
     print("Init dataset...")
     if extreme_bias:
         factor = 0
