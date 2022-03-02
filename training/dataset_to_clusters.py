@@ -74,7 +74,7 @@ def collect_posteriors(embs_labs_set_iterator, ltmodel):
 def group_by_label(embs_labs_set_iterator):
     label_lists = defaultdict(list)
     for batch_embs, batch_labs in embs_labs_set_iterator:
-        if len(batch_embs.shape[0] == 3):
+        if len(batch_embs.shape[0]) == 3:
             for j in range(batch_embs.shape[0]):
                 emb = batch_embs[j,:,:].cpu().detach().to_numpy()
                 lab = int(batch_labs[j].cpu().detach().to_numpy())
