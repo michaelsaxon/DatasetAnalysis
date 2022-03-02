@@ -149,6 +149,8 @@ def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None):
 # a prereq step is to produce the clustering, from this we can get PECO, etc
 def cluster_preds_to_dists(embs_cll, labs, n_clusters):
     cluster_counts = [np.array([0,0,0]) for i in range(n_clusters)]
+    print(labs.shape)
+    print(embs_cll.shape)
     for i in range(embs_cll.shape[0]):
         cluster_counts[embs_cll[i]][labs[i]] += 1
     cluster_counts = np.stack(cluster_counts)
