@@ -57,12 +57,18 @@ def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, biastype = (False, 
     return str(foldername)
 
 
+# hack hack hack disgusting
+def cuda_dict(tensor_dict):
+    for key in tensor_dict.keys():
+        tensor_dict[key].cuda()
+
 ## implement each step in the eval, pca, cluster pipeline
 # run the ltmodel to get the embeddings
 def collect_embeddings(nli_dataset, ltmodel):
     # maybe cuda if we want
     print("Collecting embeddings...")
     for batch in tqdm(nli_dataset.test_dataloader()):
+        cuda_dict(batch)
         batch_embs = ltmodel.forward_get_embs(batch)
         yield batch_embs, batch["labels"]
 
