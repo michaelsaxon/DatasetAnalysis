@@ -224,6 +224,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
         factor = 1
 
     model.cuda()
+    ltmodel.cuda()
 
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir", "intermed_comp_dir_base"])
     
