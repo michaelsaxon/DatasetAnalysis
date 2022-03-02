@@ -85,13 +85,11 @@ def group_by_label(embs_labs_set_iterator):
     for batch_embs, batch_labs in embs_labs_set_iterator:
         if len(batch_embs.shape) == 3:
             for j in range(batch_embs.shape[0]):
-                print(batch_embs.shape)
-                emb = batch_embs[j,:,:].cpu().detach().numpy()
+                emb = batch_embs[j,0,:].cpu().detach().numpy()
                 lab = int(batch_labs[j].cpu().detach().numpy())
                 label_lists[lab].append(emb)
         else:
-            emb = batch_embs.cpu().detach().numpy()
-            print(emb.shape)
+            emb = batch_embs[0,:].cpu().detach().numpy()
             lab = int(batch_labs.cpu().detach().numpy())
             label_lists[lab].append(emb)
     return label_lists
