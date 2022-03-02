@@ -1,7 +1,7 @@
-roberta-large-snli,DatasetAnalysis-NLIbias/3ujzt58w
-roberta-large-anli1,DatasetAnalysis-NLIbias/10e26fn4
-roberta-large-anli2,DatasetAnalysis-NLIbias/2nzdo7me
-roberta-large-mnli,DatasetAnalysis-NLIbias/3lqgp2w9
-roberta-large-anli3,DatasetAnalysis-NLIbias/64iggkkr
-roberta-large-sick,DatasetAnalysis-NLIbias/2uypojvi
-bert-chinese-ocnli,DatasetAnalysis-NLIbias/2whravnh
+S,roberta-large,DatasetAnalysis-NLIbias/3ujzt58w
+A1,roberta-large,DatasetAnalysis-NLIbias/10e26fn4
+A2,roberta-large,DatasetAnalysis-NLIbias/2nzdo7me
+M,roberta-large,DatasetAnalysis-NLIbias/3lqgp2w9
+A3,roberta-large,DatasetAnalysis-NLIbias/64iggkkr
+SICK,roberta-large,DatasetAnalysis-NLIbias/2uypojvi
+OC,bert-base-chinese,DatasetAnalysis-NLIbias/2whravnh
