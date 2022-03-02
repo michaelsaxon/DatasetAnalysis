@@ -151,21 +151,19 @@ def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None):
 # a prereq step is to produce the clustering, from this we can get PECO, etc
 def cluster_preds_to_dists(embs_cll, labs, n_clusters):
     cluster_counts = [np.array([0,0,0]) for i in range(n_clusters)]
-    print(labs.shape)
-    print(embs_cll.shape)
     for i in range(embs_cll.shape[0]):
         cluster_counts[embs_cll[i]][labs[i]] += 1
     cluster_counts = np.stack(cluster_counts)
-    return cluster_counts / cluster_counts.sum(-1).unsqueeze(1)
+    return cluster_counts / cluster_counts.sum(-1).expand_dims(1)
 
 # discrete clusterwise cross entropy between local dist and balanced dist
 def cluster_xH(cluster_dists, balance = np.array([.333334,.333333,.333333])):
-    x = balance.unsqueeze(0) * np.log2(cluster_dists)
+    x = balance.expand_dims(0) * np.log2(cluster_dists)
     return - x.sum(-1)
 
 # compute clusterwise L2 norm between local dist and balanced dist
 def cluster_L2(cluster_dists, balance = np.array([.333334,.333333,.333333])):
-    x = np.power(balance.unsqueeze(0) - cluster_dists, 2)
+    x = np.power(balance.expand_dims(0) - cluster_dists, 2)
     return x.sum(-1)
 
 # compute pct of clusters with divergence over some threshold
@@ -249,7 +247,6 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     # pca transformed embeddings
     embs_pca = pca_fit_transform(embs, tmp_save_dir=intermed_comp_dir)
     # cluster-labeled embeddings
-    print(embs_pca.shape)
     embs_cll = kmeans_fit_transform(embs_pca)
     ## evaluate the PECO measure
     # get the cluster cross entropies
