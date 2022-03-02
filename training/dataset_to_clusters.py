@@ -180,19 +180,19 @@ def outlier_cluster_ids(cluster_norms, threshold):
     return outlier_ids
 
 # build progressive evaluation of cluster outliers curve
-def peco_curve(cluster_norms, n_steps = 20):
+def peco_curve(cluster_norms, n_steps = 20, scale = 1):
     peco_x = []
     peco_y = []
     for i in range(n_steps):
-        this_thresh = float(i) / n_steps
+        this_thresh = float(i) / n_steps * scale
         this_count =  threshold_score(cluster_norms, this_thresh)
         peco_x.append(this_thresh)
         peco_y.append(this_count)
     return np.array(peco_x), np.array(peco_y)
 
 # almondo almondo almondo (area under peco curve)
-def peco_score(cluster_norms, n_steps = 20):
-    _, peco_y = peco_curve(cluster_norms, n_steps)
+def peco_score(cluster_norms, n_steps = 20, scale = 1):
+    _, peco_y = peco_curve(cluster_norms, n_steps, scale)
     # auc
     return np.sum(peco_y) / n_steps
 
@@ -254,10 +254,9 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     cluster_dists = cluster_preds_to_dists(embs_cll, labs, n_clusters = 50)
     clusters_xHs = cluster_xH(cluster_dists)
     clusters_L2 = cluster_L2(cluster_dists)
-    print(clusters_xHs)
-    peco_xH = peco_score(clusters_xHs)
+    peco_xH = peco_score(clusters_xHs, scale = 5)
     peco_L2 = peco_score(clusters_L2)
-    threshscore_xH_25 = threshold_score(clusters_xHs, .25)
+    threshscore_xH_25 = threshold_score(clusters_xHs, .25 * 5)
     threshscore_L2_25 = threshold_score(clusters_L2, .25)
     # generate AUC plots
     # generate T-SNE plot
