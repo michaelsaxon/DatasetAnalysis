@@ -232,7 +232,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
         (biased, extreme_bias, s2only))
 
     nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor, s2only)
-    nli_data.prepare_data()
+    nli_data.prepare_data(test_only = True)
 
     # collect lists of numpy arrays
     embs, labs = get_numpy_embs(nli_data, ltmodel, tmp_save_dir=intermed_comp_dir)

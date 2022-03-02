@@ -221,13 +221,14 @@ class plNLIDataModule(pl.LightningDataModule):
         self.s2only = s2only
 
     # Loads and splits the data into training, validation and test sets with a 60/20/20 split
-    def prepare_data(self):
+    def prepare_data(self, test_only = False):
         print("Preparing data...")
         if self.dataset == "SICK":
             self.train, self.valid, self.test = load_sick_data(self.basepath)
         else:
-            self.train = load_nli_data(self.basepath, self.dataset, "train")
-            self.valid = load_nli_data(self.basepath, self.dataset, "dev")
+            if not test_only:
+                self.train = load_nli_data(self.basepath, self.dataset, "train")
+                self.valid = load_nli_data(self.basepath, self.dataset, "dev")
             self.test = load_nli_data(self.basepath, self.dataset, "test")
         #print("Preparing input vectors...")
 
