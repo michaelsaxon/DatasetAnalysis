@@ -154,16 +154,16 @@ def cluster_preds_to_dists(embs_cll, labs, n_clusters):
     for i in range(embs_cll.shape[0]):
         cluster_counts[embs_cll[i]][labs[i]] += 1
     cluster_counts = np.stack(cluster_counts)
-    return cluster_counts / cluster_counts.sum(-1).expand_dims(1)
+    return cluster_counts / cluster_counts.sum(-1)
 
 # discrete clusterwise cross entropy between local dist and balanced dist
 def cluster_xH(cluster_dists, balance = np.array([.333334,.333333,.333333])):
-    x = balance.expand_dims(0) * np.log2(cluster_dists)
+    x = balance * np.log2(cluster_dists)
     return - x.sum(-1)
 
 # compute clusterwise L2 norm between local dist and balanced dist
 def cluster_L2(cluster_dists, balance = np.array([.333334,.333333,.333333])):
-    x = np.power(balance.expand_dims(0) - cluster_dists, 2)
+    x = np.power(balance - cluster_dists, 2)
     return x.sum(-1)
 
 # compute pct of clusters with divergence over some threshold
