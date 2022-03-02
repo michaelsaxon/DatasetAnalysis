@@ -1,7 +1,7 @@
 """
 Examples
 
-CUDA_VISIBLE_DEVICES=0 python dataset_to_clusters.py --dataset S --s2_only
+CUDA_VISIBLE_DEVICES=0 python dataset_to_clusters.py --dataset S --s2only
 
 """
 import click

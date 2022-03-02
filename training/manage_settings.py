@@ -33,7 +33,11 @@ def read_models_csv(dataset, csv_path = "finetuned_models.csv"):
         for line in lines:
             line = line.strip().split(",")
             if dataset == line[0]:
-                return line[1], line[2]
+                pretrained_path = line[2]
+                if pretrained_path[-4:] != "ckpt":
+                    potential_checkpoints = glob.glob(pretrained_path + "/checkpoints/*")
+                    pretrained_path = potential_checkpoints[-1]
+                return line[1], pretrained_path
     # csv doesn't exist or dataset not in it.
     model_name = input(f"Please provide huggingface model_id (default roberta-large):")
     if model_name == "":
