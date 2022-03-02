@@ -251,6 +251,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     ## evaluate the PECO measure
     # get the cluster cross entropies
     cluster_dists = cluster_preds_to_dists(embs_cll, labs, n_clusters = 50)
+    print(cluster_dists)
     clusters_xHs = cluster_xH(cluster_dists)
     clusters_L2 = cluster_L2(cluster_dists)
     peco_xH = peco_score(clusters_xHs)
