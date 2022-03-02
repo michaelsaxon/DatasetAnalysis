@@ -57,6 +57,6 @@ CUDA_VISIBLE_DEVICES=6 python train_classifier.py --n_gpus 1 \
      --dataset SICK --batch_size 36 --n_epochs 25 --lr 0.00001
 
 
-CUDA_VISIBLE_DEVICES=6 python train_classifier.py --n_gpus 1 \
+CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
      --dataset OC --model_id bert-base-chinese \
      --batch_size 36 --n_epochs 25
