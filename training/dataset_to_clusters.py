@@ -254,7 +254,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     cluster_dists = cluster_preds_to_dists(embs_cll, labs, n_clusters = 50)
     clusters_xHs = cluster_xH(cluster_dists)
     clusters_L2 = cluster_L2(cluster_dists)
-    peco_xH = peco_score(clusters_xHs, scale = 5)
+    peco_xH = peco_score(clusters_xHs, scale = 10)
     peco_L2 = peco_score(clusters_L2)
     threshscore_xH_25 = threshold_score(clusters_xHs, .25 * 5)
     threshscore_L2_25 = threshold_score(clusters_L2, .25)
