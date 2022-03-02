@@ -65,6 +65,11 @@ class RobertaClassifier(pl.LightningModule):
         return self.model(**kwargs)
 
 
+    def forward_get_embs(self, batch):
+        return self.model(input_ids = batch['input_ids'], attention_mask=batch['attention_mask'], 
+            output_hidden_states = True)["hidden_states"][-1]
+
+
     def forward_loss_acc(self, batch):
         outputs = self(input_ids = batch['input_ids'], attention_mask=batch['attention_mask'])
         targets = batch['labels'].squeeze()
