@@ -141,7 +141,7 @@ def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None):
     else:
         skip = False
     kms_fname = PurePath(tmp_save_dir + f"/kms-{n_clusters}.pckl")
-    kms_model = gen_cache_fit(kms_fname, embs, KMeans(n_clusters=n_clusters, verbose=True, init='k-means++').fit, skip=skip)
+    kms_model = gen_cache_fit(kms_fname, embs, KMeans(n_clusters=n_clusters, init='k-means++').fit, skip=skip)
     return kms_model.predict(embs)
 
 
@@ -248,7 +248,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     embs_cll = kmeans_fit_transform(embs_pca)
     ## evaluate the PECO measure
     # get the cluster cross entropies
-    cluster_dists = cluster_preds_to_dists(embs_cll, labs)
+    cluster_dists = cluster_preds_to_dists(embs_cll, labs, n_clusters = 50)
     clusters_xHs = cluster_xH(cluster_dists)
     clusters_L2 = cluster_L2(cluster_dists)
     peco_xH = peco_score(clusters_xHs)
