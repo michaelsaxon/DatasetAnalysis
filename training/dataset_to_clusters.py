@@ -168,7 +168,7 @@ def cluster_L2(cluster_dists, balance = np.array([.333334,.333333,.333333])):
 
 # compute pct of clusters with divergence over some threshold
 def threshold_score(cluster_norms, threshold):
-    return torch.sum(cluster_norms > threshold) / cluster_norms.shape[0]
+    return np.sum(cluster_norms > threshold) / cluster_norms.shape[0]
 
 # get a list of the clusters that are in the set of outliers for a given thresh
 def outlier_cluster_ids(cluster_norms, threshold):
