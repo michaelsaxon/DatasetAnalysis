@@ -28,7 +28,7 @@ import os
 import time
 
 # is this really the way to pull out of manage settings?
-from . import get_write_settings, lazymkdir
+from manage_settings import get_write_settings, lazymkdir
 
 BASEPATH = "/data2/saxon/bart_test"
 
