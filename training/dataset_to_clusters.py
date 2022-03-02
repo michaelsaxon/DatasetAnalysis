@@ -104,8 +104,10 @@ def label_lists_to_arrays(label_lists):
     print(X_list[0].shape)
     print(X_list[1].shape)
     X_list = np.concatenate(X_list, axis=0)
+    labels = np.array(labels)
     print(X_list.shape)
-    return X_list, np.array(labels)
+    print(labels.shape)
+    return X_list, labels
 
 # this is a bundle of the two prev functions to interface with auto caching
 def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None):
