@@ -52,7 +52,7 @@ def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, biastype = (False, 
     else:
         biastype = "normal"
     # for now I've only implemented test set
-    foldername = PurePath(base + f"/{dataset}-test-{biastype}/")
+    foldername = PurePath(base + f"/{dataset}-test-{biastype}/.")
     lazymkdir(foldername)
     return str(foldername)
 
