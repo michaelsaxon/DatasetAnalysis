@@ -89,6 +89,7 @@ def group_by_label(embs_labs_set_iterator):
                 lab = int(batch_labs[j].cpu().detach().numpy())
                 label_lists[lab].append(emb)
         else:
+            print(emb)
             emb = batch_embs[0,:].cpu().detach().numpy()
             lab = int(batch_labs.cpu().detach().numpy())
             label_lists[lab].append(emb)
