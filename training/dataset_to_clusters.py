@@ -249,7 +249,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only, n_clusters):
     # pca transformed embeddings
     embs_pca = pca_fit_transform(embs, tmp_save_dir=intermed_comp_dir)
     # cluster-labeled embeddings
-    embs_cll = kmeans_fit_transform(embs_pca)
+    embs_cll = kmeans_fit_transform(embs_pca, n_clusters = n_clusters)
     ## evaluate the PECO measure
     # get the cluster cross entropies
     cluster_dists = cluster_preds_to_dists(embs_cll, labs, n_clusters = n_clusters)
