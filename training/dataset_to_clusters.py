@@ -75,7 +75,7 @@ def collect_embeddings(nli_dataset, ltmodel):
 # run the ltmodel to get the posteriors
 def collect_last_dense(embs_labs_set_iterator, ltmodel):
     for batch_embs, batch_labs in embs_labs_set_iterator:
-        batch_embs = ltmodel.model.classifier.dense(batch_embs[:,0,:])
+        batch_embs = ltmodel.model.classifier.dense(batch_embs)
         batch_embs = batch_embs.squeeze()
         yield batch_embs, batch_labs
 
