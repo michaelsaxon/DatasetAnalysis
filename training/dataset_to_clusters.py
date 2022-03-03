@@ -40,7 +40,7 @@ def gen_cache_fit(fname, data, genfn, skip = False, loadfn = _pkload, savefn = _
             savefn(obj, fname)
     return obj
 
-def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, n_clusters, biastype = (False, False, False)):
+def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, n_clusters, lastdense, biastype = (False, False, False)):
     base = lazymkdir(intermed_comp_dir_base)
     biased, extremebias, s2only = biastype
     if s2only:
@@ -52,7 +52,7 @@ def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, n_clusters, biastyp
     else:
         biastype = "normal"
     # for now I've only implemented test set
-    foldername = str(PurePath(base + f"/{dataset}-test-{biastype}-n{n_clusters}/.")) + "/."
+    foldername = str(PurePath(base + f"/{'ld-'*lastdense}{dataset}-test-{biastype}-n{n_clusters}/.")) + "/."
     lazymkdir(foldername)
     return str(foldername)
 
@@ -73,7 +73,7 @@ def collect_embeddings(nli_dataset, ltmodel):
         yield batch_embs, batch["labels"]
 
 # run the ltmodel to get the posteriors
-def collect_posteriors(embs_labs_set_iterator, ltmodel):
+def collect_last_dense(embs_labs_set_iterator, ltmodel):
     for batch_embs, batch_labs in embs_labs_set_iterator:
         batch_embs = ltmodel.model.classifier.dense(batch_embs[:,0,:])
         batch_embs = batch_embs.squeeze()
@@ -106,9 +106,13 @@ def label_lists_to_arrays(label_lists):
     return X_list, labels
 
 # this is a bundle of the two prev functions to interface with auto caching
-def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None):
+def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None, lastdense = False):
     if tmp_save_dir == None:
-        embs, labs = label_lists_to_arrays(group_by_label(collect_embeddings(nli_data, ltmodel)))
+        if lastdense:
+            embs_labs_set_iterator = collect_last_dense(collect_embeddings(nli_data, ltmodel), ltmodel)
+        else:
+            embs_labs_set_iterator = collect_embeddings(nli_data, ltmodel)
+        embs, labs = label_lists_to_arrays(group_by_label(embs_labs_set_iterator))
         return embs, labs
     else:
         xname = PurePath(tmp_save_dir + "/embs.npy")
@@ -117,7 +121,11 @@ def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None):
             embs = np.load(xname)
             labs = np.load(lname)
         else:
-            embs, labs = label_lists_to_arrays(group_by_label(collect_embeddings(nli_data, ltmodel)))
+            if lastdense:
+                embs_labs_set_iterator = collect_last_dense(collect_embeddings(nli_data, ltmodel), ltmodel)
+            else:
+                embs_labs_set_iterator = collect_embeddings(nli_data, ltmodel)
+            embs, labs = label_lists_to_arrays(group_by_label(embs_labs_set_iterator))
             np.save(xname, embs)
             np.save(lname, labs)
     return embs, labs
@@ -216,8 +224,9 @@ def tsne_fit_transform(embs, perp, tmp_save_dir = None):
 @click.option('--biased', is_flag=True)
 @click.option('--extreme_bias', is_flag=True)
 @click.option('--s2only', is_flag=True)
+@click.option('--lastdense', is_flag=True)
 @click.option('--n_clusters', default=50)
-def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only, n_clusters):
+def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only, n_clusters, lastdense):
     model_id, pretrained_path = read_models_csv(dataset)
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
@@ -239,13 +248,13 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only, n_clusters):
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir", "intermed_comp_dir_base"])
     
     intermed_comp_dir = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
-        n_clusters, (biased, extreme_bias, s2only))
+        n_clusters, lastdense, (biased, extreme_bias, s2only))
 
     nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor, s2only)
     nli_data.prepare_data(test_only = True)
 
     # collect lists of numpy arrays
-    embs, labs = get_numpy_embs(nli_data, ltmodel, tmp_save_dir=intermed_comp_dir)
+    embs, labs = get_numpy_embs(nli_data, ltmodel, tmp_save_dir=intermed_comp_dir, lastdense = lastdense)
     # pca transformed embeddings
     embs_pca = pca_fit_transform(embs, tmp_save_dir=intermed_comp_dir)
     # cluster-labeled embeddings

@@ -47,6 +47,9 @@ You will want to set up a working directory where trained models, precomp'd embe
 - [x] complete basic implementation
 - [x] Finish and check requirements.txt
 - [x] Implement working dir stuff as 
+- [x] modularized PECO scoring
+- [ ] modularized graph analysis
+- [ ] side-by-side model/condition performance (How much recovery is actually recovery)
 - [ ] Frequency list computation for levels of n-gram
 - [ ] Dataset filtration code (x domain changing)
 - [ ] Compute entropy for dataset, classes, etc
