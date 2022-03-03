@@ -1,7 +1,7 @@
 """
 Examples
 
-CUDA_VISIBLE_DEVICES=5 python dataset_to_clusters.py --dataset SICK --s2only
+CUDA_VISIBLE_DEVICES=3 python dataset_to_clusters.py --dataset A1 --s2only --n_clusters 25
 
 """
 import click
@@ -40,7 +40,7 @@ def gen_cache_fit(fname, data, genfn, skip = False, loadfn = _pkload, savefn = _
             savefn(obj, fname)
     return obj
 
-def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, biastype = (False, False, False)):
+def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, n_clusters, biastype = (False, False, False)):
     base = lazymkdir(intermed_comp_dir_base)
     biased, extremebias, s2only = biastype
     if s2only:
@@ -52,7 +52,7 @@ def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, biastype = (False, 
     else:
         biastype = "normal"
     # for now I've only implemented test set
-    foldername = str(PurePath(base + f"/{dataset}-test-{biastype}/.")) + "/."
+    foldername = str(PurePath(base + f"/{dataset}-test-{biastype}-n{n_clusters}/.")) + "/."
     lazymkdir(foldername)
     return str(foldername)
 
@@ -216,7 +216,8 @@ def tsne_fit_transform(embs, perp, tmp_save_dir = None):
 @click.option('--biased', is_flag=True)
 @click.option('--extreme_bias', is_flag=True)
 @click.option('--s2only', is_flag=True)
-def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
+@click.option('--n_clusters', default=50)
+def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only, n_clusters):
     model_id, pretrained_path = read_models_csv(dataset)
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
@@ -238,7 +239,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir", "intermed_comp_dir_base"])
     
     intermed_comp_dir = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
-        (biased, extreme_bias, s2only))
+        n_clusters, (biased, extreme_bias, s2only))
 
     nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor, s2only)
     nli_data.prepare_data(test_only = True)
@@ -251,7 +252,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only):
     embs_cll = kmeans_fit_transform(embs_pca)
     ## evaluate the PECO measure
     # get the cluster cross entropies
-    cluster_dists = cluster_preds_to_dists(embs_cll, labs, n_clusters = 50)
+    cluster_dists = cluster_preds_to_dists(embs_cll, labs, n_clusters = n_clusters)
     clusters_xHs = cluster_xH(cluster_dists)
     clusters_L2 = cluster_L2(cluster_dists)
     peco_xH = peco_score(clusters_xHs, scale = 5)
