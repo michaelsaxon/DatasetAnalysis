@@ -58,10 +58,10 @@ def main(n_gpus, dataset, batch_size):
     intermed_comp_dir = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
         n_clusters, (biased, extreme_bias, s2only))
 
-    nli_data_1 = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, False, False, 1, False)
+    nli_data_1 = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, False, False, 1, False)
     nli_data_1.prepare_data(test_only = True)
 
-    nli_data_2 = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, False, False, 1, True)
+    nli_data_2 = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, False, False, 1, True)
     nli_data_2.prepare_data(test_only = True)
 
 
