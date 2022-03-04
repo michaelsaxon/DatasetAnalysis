@@ -5,6 +5,7 @@ CUDA_VISIBLE_DEVICES=0 python compare_runs.py --dataset A3
 from train_classifier import *
 from dataset_to_clusters import *
 from manage_settings import get_write_settings, read_models_csv, lazymkdir
+from tqdm import tqdm
 
 def collect_posteriors(nli_dataset, ltmodel):
     print("Collecting decisions...")
@@ -16,7 +17,7 @@ def collect_posteriors(nli_dataset, ltmodel):
 def get_numpy_preds(nli_data, ltmodel):
     decisions_list = []
     labels_list = []
-    for batch_posts, batch_labs in collect_posteriors(nli_data, ltmodel):
+    for batch_posts, batch_labs in tqdm(collect_posteriors(nli_data, ltmodel)):
         batch_decisions = torch.max(batch_posts, -1).indices
         batch_decisions = batch_decisions.cpu().detach().numpy()
         batch_labs = batch_labs.cpu().detach().numpy()
@@ -49,18 +50,21 @@ def main(n_gpus, dataset, batch_size):
 
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir", "intermed_comp_dir_base"])
     
-    nli_data_1 = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, False, False, 1, False)
+    nli_data_1 = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, False, 1, False)
     nli_data_1.prepare_data(test_only = True)
 
-    nli_data_2 = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, False, False, 1, True)
+    nli_data_2 = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, False, 1, True)
     nli_data_2.prepare_data(test_only = True)
 
+    print("Running model 1...")
 
     dec_1, labs_1 = get_numpy_preds(nli_data_1, ltmodel)
 
     ltmodel.load_state_dict(ckpt_2["state_dict"])
     model.cuda()
     ltmodel.cuda()
+
+    print("Running model 2...")
 
     dec_2, labs_2 = get_numpy_preds(nli_data_2, ltmodel)
 
