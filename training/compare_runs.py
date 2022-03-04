@@ -67,6 +67,7 @@ def main(n_gpus, dataset, batch_size):
 
     dec_2, labs_2 = get_numpy_preds(nli_data_2, ltmodel)
 
+    print(dec_1.shape)
     print(dec_2.shape)
     agreement = np.equal(dec_1, dec_2)
     correct_1 = np.equal(dec_1, labs_1)
