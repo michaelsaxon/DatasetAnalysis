@@ -8,16 +8,15 @@ from manage_settings import get_write_settings, read_models_csv, lazymkdir
 from tqdm import tqdm
 
 def collect_posteriors(nli_dataset, ltmodel):
-    print("Collecting decisions...")
     for batch in tqdm(nli_dataset.test_dataloader()):
         cuda_dict(batch)
-        batch_posts = ltmodel(batch)
+        batch_posts = ltmodel(input_ids = batch['input_ids'], attention_mask=batch['attention_mask'])
         yield batch_posts, batch["labels"]
 
 def get_numpy_preds(nli_data, ltmodel):
     decisions_list = []
     labels_list = []
-    for batch_posts, batch_labs in tqdm(collect_posteriors(nli_data, ltmodel)):
+    for batch_posts, batch_labs in collect_posteriors(nli_data, ltmodel):
         batch_decisions = torch.max(batch_posts, -1).indices
         batch_decisions = batch_decisions.cpu().detach().numpy()
         batch_labs = batch_labs.cpu().detach().numpy()
