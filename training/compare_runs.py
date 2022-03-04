@@ -11,7 +11,7 @@ def collect_posteriors(nli_dataset, ltmodel):
     for batch in tqdm(nli_dataset.test_dataloader()):
         cuda_dict(batch)
         batch_posts = ltmodel(input_ids = batch['input_ids'], attention_mask=batch['attention_mask'])
-        yield batch_posts, batch["labels"]
+        yield batch_posts['labels'].squeeze(), batch["labels"]
 
 def get_numpy_preds(nli_data, ltmodel):
     decisions_list = []
