@@ -75,7 +75,8 @@ def main(n_gpus, dataset, batch_size):
     correct_agreement = agreement * correct_1 * correct_2
 
     print(agreement.sum() / agreement.shape[0])
-    print(correct_agreement.sum() / correct_agreement.shape[0])
+    print(correct_agreement.sum() / correct_1.sum())
+    print(correct_agreement.sum() / correct_2.sum())
 
 
 if __name__ == "__main__":
