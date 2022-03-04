@@ -53,9 +53,6 @@ def main(n_gpus, dataset, batch_size):
 
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir", "intermed_comp_dir_base"])
     
-    intermed_comp_dir = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
-        n_clusters, (biased, extreme_bias, s2only))
-
     nli_data_1 = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, False, False, 1, False)
     nli_data_1.prepare_data(test_only = True)
 
