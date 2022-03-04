@@ -1,3 +1,7 @@
+"""
+CUDA_VISIBLE_DEVICES=0 python compare_runs.py --dataset A3
+"""
+
 from train_classifier import *
 from dataset_to_clusters import *
 from manage_settings import get_write_settings, read_models_csv, lazymkdir
