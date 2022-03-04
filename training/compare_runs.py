@@ -36,7 +36,9 @@ def main(n_gpus, dataset, batch_size):
     model_id, pretrained_path_1 = read_models_csv(dataset)
     _, pretrained_path_2 = read_models_csv(dataset, True)
 
+    print("hmmm")
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
+    print("hmmmmm.......")
     ltmodel = RobertaClassifier(model, learning_rate=0)
     print("Init litmodel...")
     ckpt_1 = torch.load(pretrained_path_1)
