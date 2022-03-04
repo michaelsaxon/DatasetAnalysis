@@ -73,10 +73,12 @@ def main(n_gpus, dataset, batch_size):
     correct_1 = np.equal(dec_1, labs_1)
     correct_2 = np.equal(dec_2, labs_2)
     correct_agreement = agreement * correct_1 * correct_2
+    correct_1 + correct_2
 
     print(agreement.sum() / agreement.shape[0])
     print(correct_agreement.sum() / correct_1.sum())
     print(correct_agreement.sum() / correct_2.sum())
+    print(correct_agreement.sum() / agreement.sum())
 
 
 if __name__ == "__main__":
