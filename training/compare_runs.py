@@ -43,10 +43,6 @@ def main(n_gpus, dataset, batch_size):
     ckpt_2 = torch.load(pretrained_path_2)
     ltmodel.load_state_dict(ckpt_1["state_dict"])
     print("Init dataset...")
-    if extreme_bias:
-        factor = 0
-    else:
-        factor = 1
 
     model.cuda()
     ltmodel.cuda()
