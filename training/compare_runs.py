@@ -67,14 +67,12 @@ def main(n_gpus, dataset, batch_size):
 
     dec_2, labs_2 = get_numpy_preds(nli_data_2, ltmodel)
 
-    print(dec_1.shape)
-    print(labs_1.shape)
+    labs_1 = labs_1.squeeze()
+    labs_2 = labs_2.squeeze()
     agreement = np.equal(dec_1, dec_2)
     correct_1 = np.equal(dec_1, labs_1)
     correct_2 = np.equal(dec_2, labs_2)
     correct_agreement = agreement * correct_1 * correct_2
-    print(correct_agreement.shape)
-    print(correct_1.shape)
 
     print(agreement.sum() / agreement.shape[0])
     print(correct_agreement.sum() / correct_agreement.shape[0])
