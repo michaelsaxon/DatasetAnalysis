@@ -33,13 +33,10 @@ def get_numpy_preds(nli_data, ltmodel):
 @click.option('--batch_size', default=48)
 def main(n_gpus, dataset, batch_size):
     # do 2 diff pretrained paths
-    print("is anything happening lmao")
     model_id, pretrained_path_1 = read_models_csv(dataset)
-    _, pretrained_path_2 = read_models_csv(dataset, True)
+    _, pretrained_path_2 = read_models_csv(dataset, s2only=True)
 
-    print("hmmm")
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
-    print("hmmmmm.......")
     ltmodel = RobertaClassifier(model, learning_rate=0)
     print("Init litmodel...")
     ckpt_1 = torch.load(pretrained_path_1)
