@@ -16,11 +16,11 @@ def main(path):
     for line in lines:
         line = json.loads(line.strip())
         print(line["id"])
-        labels[line["id"]] = line["label"]
+        labels[str(line["id"])] = line["label"]
     lines = open(path + "/dev_fitems.jsonl").readlines()
     for idx in tqdm(range(len(lines))):
         line = json.loads(lines[idx].strip())
-        line["label"] = labels[line["cid"]]
+        line["label"] = labels[str(line["cid"])]
         lines[idx] = json.dumps(line).strip() + "\n"
     with open(path + "/dev_labels.jsonl", "w") as f:
         f.writelines(lines)
