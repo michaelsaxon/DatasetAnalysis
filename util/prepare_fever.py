@@ -2,7 +2,7 @@ import os
 import click
 import shutil
 import json
-import tqdm
+from tqdm import tqdm
 
 @click.command()
 @click.option('--path')
