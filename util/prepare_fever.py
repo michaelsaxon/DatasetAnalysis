@@ -15,7 +15,7 @@ def main(path):
     for line in lines:
         line = json.loads(line.strip())
         labels[line["id"]] = line["label"]
-    lines = open(path + "/dev_fitems.jsonl")
+    lines = open(path + "/dev_fitems.jsonl").readlines()
     for idx in range(len(lines)):
         line = json.loads(lines[idx].strip())
         line["label"] = labels[line["cid"]]
