@@ -225,8 +225,8 @@ def pad_seq_collate_fn(seq_of_samples):
     for key in data.keys():
         data[key] = torch.nn.utils.rnn.pad_sequence(data[key], batch_first = True)
         shape = data[key].shape
-        if shape[0] > MAX_MODEL_LEN_HACK:
-            data[key] = data[key][:MAX_MODEL_LEN_HACK]
+        if shape[1] > MAX_MODEL_LEN_HACK:
+            data[key] = data[key][:,:MAX_MODEL_LEN_HACK]
     return data
 
 
