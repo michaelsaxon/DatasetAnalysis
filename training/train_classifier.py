@@ -5,6 +5,7 @@ CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
 SEE RECIPES.txt
 '''
 
+from ctypes.wintypes import tagSIZE
 from email.policy import default
 import torch
 from torch.utils.data import DataLoader, TensorDataset, random_split, RandomSampler, Dataset
@@ -32,19 +33,27 @@ from manage_settings import get_write_settings, lazymkdir
 
 BASEPATH = "/data2/saxon/bart_test"
 
+# (name, number (only for ANLI), [premise_name, hypothesis_name], dev_only)
 VALID_DATASETS = {
-    "S" : ("snli", None, ["sentence1", "sentence2"]),
-    "A1": ("anli", 1, ["context", "hypothesis"]),
-    "A2": ("anli", 2, ["context", "hypothesis"]),
-    "A3": ("anli", 3, ["context", "hypothesis"]),
-    "M" : ("mnli", None, ["sentence1", "sentence2"]),
-    "OC" : ("ocnli", None, ["sentence1", "sentence2"])
+    "S" : ("snli", None, ["sentence1", "sentence2"], False),
+    "A1": ("anli", 1, ["context", "hypothesis"], False),
+    "A2": ("anli", 2, ["context", "hypothesis"], False),
+    "A3": ("anli", 3, ["context", "hypothesis"], False),
+    "M" : ("mnli", None, ["sentence1", "sentence2"], True),
+    "OC" : ("ocnli", None, ["sentence1", "sentence2"], False),
+    "F" : ("fever", None, ["query", "context"], True)
 }
 
 FULL_LABEL_MAP = {
     "e" : "entailment",
     "c" : "contradiction",
     "n" : "neutral"
+}
+
+FEVER_LABEL_MAP = {
+    "SUPPORTS" : "entailment",
+    "REFUTES" : "contradiction",
+    "NOT ENOUGH INFO" : "neutral"
 }
 
 # THIS IS THE IDX REVERSAL DICTIONARY
@@ -124,13 +133,18 @@ def load_sick_data(basepath, label_id = True):
 
 
 def load_nli_data(basepath, dataset, partition, label_id = True):
-    ds, r, sentencemap = VALID_DATASETS[dataset]
+    ds, r, sentencemap, dev_only = VALID_DATASETS[dataset]
+
+    # lightest weight hack
+    if dev_only and partition == "test":
+        partition = "dev"
 
     registered_path = {
         'snli': f'snli_1.0/snli_1.0_{partition}.jsonl',
         'mnli': f'multinli_1.0/multinli_1.0_{partition}.jsonl',
         'anli': f'anli_v1.0/R{r}/{partition}.jsonl',
-        'ocnli': f'OCNLI/data/ocnli/{partition}.json'
+        'ocnli': f'OCNLI/data/ocnli/{partition}.json',
+        'fever': f'nli_fever/{partition}_labels.jsonl'
     }
 
     with open(PurePath(basepath + "/" + registered_path[ds])) as f:
@@ -147,6 +161,8 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
             label = line["gold_label"]
         elif dataset == "OC":
             label = line["label"].lower()
+        elif dataset == "FEVER":
+            label = FEVER_LABEL_MAP[line["label"]]
         else:
             label = FULL_LABEL_MAP[line["label"]]
         s1 = line[sentencemap[0]]
@@ -294,7 +310,7 @@ def choose_load_model_tokenizer(model_id, dataset):
 @click.command()
 @click.option('--n_gpus', default=1, help='number of gpus')
 @click.option('--n_epochs', default=25, help='max number of epochs')
-@click.option('--dataset', default="snli")
+@click.option('--dataset', default="S")
 @click.option('--lr', default=1e-5)
 @click.option('--model_id', default="roberta-large")
 @click.option('--batch_size', default=48)
@@ -321,6 +337,30 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     else:
         lang = "en"
 
+    # generate name for W&B tracking
+    name = ""
+    if s2only:
+        name += "tests2-"
+    else:
+        name += "TRAIN-"
+    dsname, dsnum, _, _ = VALID_DATASETS[dataset]
+    full_dsname = dsname
+    if dsnum is not None:
+        full_dsname = dsname + dsnum
+    name += full_dsname + f"-lr{lr:.1E}"
+    name += "-r0310"
+    # generate tags for W&B tracking
+    tags = {full_dsname : 1, dsname : 1, "has_test" : 1}
+    if s2only:
+        tags["s2only"] = 1
+    else:
+        tags["train"] = 1
+        tags["baselline"] = 1
+    if "/" in model_id:
+        tags["from_pretrained"] = 1
+    tags = list(tags.keys())
+
+
     # generate wandb config details
     wandb.init(
         project = projectname,
@@ -336,7 +376,9 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
             "lang": lang,
             "start" : start_time_str,
             "s2only" : s2only
-        }
+        },
+        tags = tags,
+        name = name
     )
     # setting up global metrics
     wandb.define_metric('val_best_acc', summary="max")
