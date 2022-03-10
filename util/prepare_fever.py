@@ -15,6 +15,7 @@ def main(path):
     labels = {}
     for line in lines:
         line = json.loads(line.strip())
+        print(line["id"])
         labels[line["id"]] = line["label"]
     lines = open(path + "/dev_fitems.jsonl").readlines()
     for idx in tqdm(range(len(lines))):
