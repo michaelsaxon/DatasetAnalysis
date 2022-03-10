@@ -64,3 +64,12 @@ CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
 CUDA_VISIBLE_DEVICES=4 python train_classifier.py --n_gpus 1 \
      --dataset OC --model_id bert-base-chinese \
      --batch_size 128 --n_epochs 25
+
+# for baseline best 
+CUDA_VISIBLE_DEVICE=3 python train_classifier.py --dataset M \
+--model_id /local/home/saxon/DatasetAnalysis/training/DatasetAnalysis-NLIbias/3ujzt58w\
+--batch_size 12
+
+# for FEVER
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --dataset F --batch_size 36
+CUDA_VISIBLE_DEVICES=4 python train_classifier.py --dataset F --batch_size 36 --s2only
