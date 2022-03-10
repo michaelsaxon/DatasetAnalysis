@@ -33,6 +33,8 @@ from manage_settings import get_write_settings, lazymkdir
 
 BASEPATH = "/data2/saxon/bart_test"
 
+MAX_MODEL_LEN_HACK = 512
+
 # (name, number (only for ANLI), [premise_name, hypothesis_name], dev_only)
 VALID_DATASETS = {
     "S" : ("snli", None, ["sentence1", "sentence2"], False),
@@ -222,6 +224,9 @@ def pad_seq_collate_fn(seq_of_samples):
             data[key].append(datum[key])
     for key in data.keys():
         data[key] = torch.nn.utils.rnn.pad_sequence(data[key], batch_first = True)
+        shape = data[key].shape
+        if shape[0] > MAX_MODEL_LEN_HACK:
+            data[key] = data[key][:MAX_MODEL_LEN_HACK]
     return data
 
 

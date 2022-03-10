@@ -71,5 +71,5 @@ CUDA_VISIBLE_DEVICE=3 python train_classifier.py --dataset M \
 --batch_size 12
 
 # for FEVER
-CUDA_VISIBLE_DEVICES=3 python train_classifier.py --dataset F --batch_size 36
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --dataset F --batch_size 16
 CUDA_VISIBLE_DEVICES=4 python train_classifier.py --dataset F --batch_size 36 --s2only
