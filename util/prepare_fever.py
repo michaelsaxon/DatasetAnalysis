@@ -2,6 +2,7 @@ import os
 import click
 import shutil
 import json
+import tqdm
 
 @click.command()
 @click.option('--path')
@@ -16,7 +17,7 @@ def main(path):
         line = json.loads(line.strip())
         labels[line["id"]] = line["label"]
     lines = open(path + "/dev_fitems.jsonl").readlines()
-    for idx in range(len(lines)):
+    for idx in tqdm(range(len(lines))):
         line = json.loads(lines[idx].strip())
         line["label"] = labels[line["cid"]]
         lines[idx] = json.dumps(line).strip() + "\n"
