@@ -49,10 +49,14 @@ You will want to set up a working directory where trained models, precomp'd embe
 - [x] Implement working dir stuff as 
 - [x] modularized PECO scoring
 - [x] side-by-side model/condition performance (How much recovery is actually recovery)
+- [x] FEVER
 - [x] s1only
 - [x] Loading from a checkpoint in train_classifier.py
+- [X] counterfactualNLI
 - [ ] Using gradient to find word-level salience in decisions (to further identify cheating)
 - [ ] Binary label for a decision: is the salience in S1 or S2 
+- [ ] XNLI (for future work)
+- [ ] aNLI (for future work)
 - [ ] modularized graph analysis
 - [ ] PECO scoring for lesioned (instead of S2only) (which might matter)
 - [ ] Frequency list computation for levels of n-gram

@@ -76,4 +76,4 @@ CUDA_VISIBLE_DEVICES=4 python train_classifier.py --dataset F --batch_size 16 --
 
 CUDA_VISIBLE_DEVICES=2 python train_classifier.py --dataset F --batch_size 32 --s1only
 
-CUDA_VISIBLE_DEVICES=1 python train_classifier.py --dataset M --batch_size 16 --epochs 10 --from_pretrained DatasetAnalysis-NLIbias/3ujzt58w
+CUDA_VISIBLE_DEVICES=1 python train_classifier.py --dataset M --batch_size 16 --n_epochs 10 --pretrained_path DatasetAnalysis-NLIbias/3ujzt58w/checkpoints/epoch=9-step=152819.ckpt

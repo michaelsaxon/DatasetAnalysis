@@ -1,0 +1,6 @@
+XNLI
+15 langs
+test only
+jsonl unicode works on loads
+we'd want to test a pre-trained model
+

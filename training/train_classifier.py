@@ -43,7 +43,8 @@ VALID_DATASETS = {
     "A3": ("anli", 3, ["context", "hypothesis"], False),
     "M" : ("mnli", None, ["sentence1", "sentence2"], True),
     "OC" : ("ocnli", None, ["sentence1", "sentence2"], False),
-    "F" : ("fever", None, ["query", "context"], True)
+    "F" : ("fever", None, ["query", "context"], True),
+    "CF" : ("counterfactual", None, ["sentence1", "sentence2"], False)
 }
 
 FULL_LABEL_MAP = {
@@ -134,7 +135,24 @@ def load_sick_data(basepath, label_id = True):
     return lines_sorted["TRAIN"], lines_sorted["TRIAL"], lines_sorted["TEST"]
 
 
+def load_counterfact_nli_data(basepath, partition, label_id = True):
+    fname = PurePath(basepath + f"/counterfactually-augmented-data/NLI/all_combined/{partition}.tsv")
+    lines = open(fname, "r").readlines()[1:]
+    sents = []
+    for line in tqdm(lines):
+        line = line.strip().split("\t")
+        label = line[2]
+        if label_id:
+            label = LABEL_IDS.get(label, LABEL_IDS["neutral"])
+        sents.append((line[0], line[1], label))
+    return sents
+
+
 def load_nli_data(basepath, dataset, partition, label_id = True):
+    # hack to add in nonstandard formatted datasets (not in json)
+    if dataset == "CF":
+        return load_counterfact_nli_data(basepath, partition, label_id)
+    
     ds, r, sentencemap, dev_only = VALID_DATASETS[dataset]
 
     # lightest weight hack
