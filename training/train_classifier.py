@@ -186,7 +186,7 @@ class NLIDataset(Dataset):
         self.bias = bias
         self.factor = bias_factor
         self.s2only = s2only
-        self.s1only = s2only
+        self.s1only = s1only
 
     def __len__(self):
         return self.length
