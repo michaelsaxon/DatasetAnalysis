@@ -236,8 +236,6 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only, n_clusters, 
     if pretrained_path != "":
         ckpt = torch.load(pretrained_path)
         ltmodel.load_state_dict(ckpt["state_dict"])
-    else:
-        model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     print("Init dataset...")
     if extreme_bias:
         factor = 0

@@ -50,7 +50,7 @@ You will want to set up a working directory where trained models, precomp'd embe
 - [x] modularized PECO scoring
 - [x] side-by-side model/condition performance (How much recovery is actually recovery)
 - [x] s1only
-- [ ] Loading from a checkpoint in train_classifier.py
+- [x] Loading from a checkpoint in train_classifier.py
 - [ ] Using gradient to find word-level salience in decisions (to further identify cheating)
 - [ ] Binary label for a decision: is the salience in S1 or S2 
 - [ ] modularized graph analysis

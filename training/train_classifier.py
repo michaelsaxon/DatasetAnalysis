@@ -325,12 +325,13 @@ def choose_load_model_tokenizer(model_id, dataset):
 @click.option('--dataset', default="S")
 @click.option('--lr', default=1e-5)
 @click.option('--model_id', default="roberta-large")
+@click.option('--pretrained_path', help="location of an instance of this model that has already been fine-tuned", default="")
 @click.option('--batch_size', default=48)
 @click.option('--biased', is_flag=True)
 @click.option('--extreme_bias', is_flag=True)
 @click.option('--s2only', is_flag=True)
 @click.option('--s1only', is_flag=True)
-def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bias, s2only, s1only):
+def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bias, s2only, s1only, pretrained_path):
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir"])
 
     wandb.login()
@@ -373,10 +374,9 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     else:
         tags["train"] = 1
         tags["baselline"] = 1
-    if "/" in model_id:
+    if pretrained_path != "":
         tags["from_pretrained"] = 1
     tags = list(tags.keys())
-
 
     # generate wandb config details
     wandb.init(
@@ -393,7 +393,8 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
             "lang": lang,
             "start" : start_time_str,
             "s2only" : s2only,
-            "s1only" : s1only
+            "s1only" : s1only,
+            "pretrained_path" : pretrained_path
         },
         tags = tags,
         name = name
@@ -415,6 +416,9 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
 
     print("Init litmodel...")
     ltmodel = RobertaClassifier(model, lr)
+    if pretrained_path != "":
+        ckpt = torch.load(pretrained_path)
+        ltmodel.load_state_dict(ckpt["state_dict"])
     print("Init dataset...")
 
     wandb_logger.watch(ltmodel.model, log_freq=500)
