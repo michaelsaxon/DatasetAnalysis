@@ -48,13 +48,15 @@ You will want to set up a working directory where trained models, precomp'd embe
 - [x] Finish and check requirements.txt
 - [x] Implement working dir stuff as 
 - [x] modularized PECO scoring
+- [x] side-by-side model/condition performance (How much recovery is actually recovery)
+- [x] s1only
+- [ ] Loading from a checkpoint in train_classifier.py
+- [ ] Using gradient to find word-level salience in decisions (to further identify cheating)
+- [ ] Binary label for a decision: is the salience in S1 or S2 
 - [ ] modularized graph analysis
 - [ ] PECO scoring for lesioned (instead of S2only) (which might matter)
-- [x] side-by-side model/condition performance (How much recovery is actually recovery)
 - [ ] Frequency list computation for levels of n-gram
 - [ ] Dataset filtration code (x domain changing)
 - [ ] Compute entropy for dataset, classes, etc
 - [ ] Corruption code (x domain)
 - [ ] Corruption code (y domain)
-- [ ] Using gradient to find word-level salience in decisions (to further identify cheating)
-- [ ] Binary label for a decision: is the salience in S1 or S2 
