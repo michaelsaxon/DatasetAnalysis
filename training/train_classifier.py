@@ -178,7 +178,7 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
 
 
 class NLIDataset(Dataset):
-    def __init__(self, sents, tokenizer, bias, bias_factor = 1, s2only = False):
+    def __init__(self, sents, tokenizer, bias, bias_factor = 1, s2only = False, s1only = False):
         # fuck it just store all the sentences in memory lmao
         self.sents = sents
         self.length = len(sents)
@@ -186,6 +186,7 @@ class NLIDataset(Dataset):
         self.bias = bias
         self.factor = bias_factor
         self.s2only = s2only
+        self.s1only = s2only
 
     def __len__(self):
         return self.length
@@ -204,6 +205,11 @@ class NLIDataset(Dataset):
             datum = {
                 "input_ids" : s2t["input_ids"],
                 "attention_mask" : s2t["attention_mask"]
+            }
+        elif self.s1only:
+            datum = {
+                "input_ids" : s1t["input_ids"],
+                "attention_mask" : s1t["attention_mask"]
             }
         else:
             datum = {
@@ -231,7 +237,7 @@ def pad_seq_collate_fn(seq_of_samples):
 
 
 class plNLIDataModule(pl.LightningDataModule):
-    def __init__(self, tokenizer, basepath, dataset, batch_size, bias, bias_factor = 1, s2only = False):
+    def __init__(self, tokenizer, basepath, dataset, batch_size, bias, bias_factor = 1, s2only = False, s1only = False):
         super().__init__()
         self.tokenizer = tokenizer
         self.basepath = basepath
@@ -240,6 +246,7 @@ class plNLIDataModule(pl.LightningDataModule):
         self.bias = bias
         self.bias_factor = bias_factor
         self.s2only = s2only
+        self.s1only = s1only
 
     # Loads and splits the data into training, validation and test sets with a 60/20/20 split
     def prepare_data(self, test_only = False):
@@ -262,7 +269,7 @@ class plNLIDataModule(pl.LightningDataModule):
 
     # Load the training, validation and test sets in Pytorch Dataset objects
     def train_dataloader(self):
-        dataset = NLIDataset(self.train, self.tokenizer, self.bias, self.bias_factor, self.s2only)                   
+        dataset = NLIDataset(self.train, self.tokenizer, self.bias, self.bias_factor, self.s2only, self.s1only)                   
         train_data = DataLoader(dataset, 
             sampler = RandomSampler(dataset), 
             batch_size = self.batch_size,
@@ -271,7 +278,7 @@ class plNLIDataModule(pl.LightningDataModule):
         return train_data
 
     def val_dataloader(self):
-        dataset = NLIDataset(self.valid, self.tokenizer, self.bias, self.bias_factor, self.s2only)
+        dataset = NLIDataset(self.valid, self.tokenizer, self.bias, self.bias_factor, self.s2only, self.s1only)
         val_data = DataLoader(dataset, 
             batch_size = self.batch_size,
             collate_fn = pad_seq_collate_fn,
@@ -279,7 +286,7 @@ class plNLIDataModule(pl.LightningDataModule):
         return val_data
 
     def test_dataloader(self):
-        dataset = NLIDataset(self.test, self.tokenizer, self.bias, self.bias_factor, self.s2only)
+        dataset = NLIDataset(self.test, self.tokenizer, self.bias, self.bias_factor, self.s2only, self.s1only)
         test_data = DataLoader(dataset, 
             batch_size = self.batch_size,
             collate_fn = pad_seq_collate_fn,
@@ -322,7 +329,8 @@ def choose_load_model_tokenizer(model_id, dataset):
 @click.option('--biased', is_flag=True)
 @click.option('--extreme_bias', is_flag=True)
 @click.option('--s2only', is_flag=True)
-def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bias, s2only):
+@click.option('--s1only', is_flag=True)
+def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bias, s2only, s1only):
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir"])
 
     wandb.login()
@@ -346,6 +354,8 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     name = ""
     if s2only:
         name += "tests2-"
+    elif s1only:
+        name += "tests1-"
     else:
         name += "TRAIN-"
     dsname, dsnum, _, _ = VALID_DATASETS[dataset]
@@ -358,6 +368,8 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     tags = {full_dsname : 1, dsname : 1, "has_test" : 1}
     if s2only:
         tags["s2only"] = 1
+    elif s1only:
+        tags["s1only"] = 1
     else:
         tags["train"] = 1
         tags["baselline"] = 1
@@ -380,7 +392,8 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
             "extreme_bias" : extreme_bias,
             "lang": lang,
             "start" : start_time_str,
-            "s2only" : s2only
+            "s2only" : s2only,
+            "s1only" : s1only
         },
         tags = tags,
         name = name
@@ -410,7 +423,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
         factor = 0
     else:
         factor = 1
-    nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor, s2only)
+    nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor, s2only, s1only)
 
     run_path = PurePath(dir_settings["data_save_dir"] + "/" + run_name)
     lazymkdir(run_path)
