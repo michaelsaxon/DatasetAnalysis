@@ -380,7 +380,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     dsname, dsnum, _, _ = VALID_DATASETS[dataset]
     full_dsname = dsname
     if dsnum is not None:
-        full_dsname = dsname + dsnum
+        full_dsname = f"{dsname}{dsnum}"
     name += full_dsname + f"-lr{lr:.1E}"
     name += "-r0310"
     # generate tags for W&B tracking
