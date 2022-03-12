@@ -77,3 +77,36 @@ CUDA_VISIBLE_DEVICES=4 python train_classifier.py --dataset F --batch_size 16 --
 CUDA_VISIBLE_DEVICES=2 python train_classifier.py --dataset F --batch_size 32 --s1only
 
 CUDA_VISIBLE_DEVICES=1 python train_classifier.py --dataset M --batch_size 16 --n_epochs 10 --pretrained_path DatasetAnalysis-NLIbias/3ujzt58w/checkpoints/epoch=9-step=152819.ckpt
+
+CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
+     --dataset CF --batch_size 128 --s2only --lr 0.000005 --n_epochs 10
+
+CUDA_VISIBLE_DEVICES=4 python train_classifier.py --n_gpus 1 \
+     --dataset CF --batch_size 64 --lr 0.000005 --n_epochs 10
+
+
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
+     --dataset CF --batch_size 64 --lr 0.000005 --n_epochs 10 \
+     --pretrained_path DatasetAnalysis-NLIbias/3ujzt58w/checkpoints/epoch=9-step=152819.ckpt
+
+
+CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
+     --dataset CF --s2only --batch_size 64 --lr 0.000005 \
+     --pretrained_path DatasetAnalysis-NLIbias/3ujzt58w/checkpoints/epoch=9-step=152819.ckpt
+
+
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
+     --dataset CF --s1only --batch_size 64 --lr 0.000005 \
+     --pretrained_path DatasetAnalysis-NLIbias/3ujzt58w/checkpoints/epoch=9-step=152819.ckpt
+
+# starting from SNLI s2 biasonly
+
+CUDA_VISIBLE_DEVICES=4 python train_classifier.py --n_gpus 1 \
+     --dataset CF --s2only --batch_size 64 --lr 0.000005 \
+     --pretrained_path DatasetAnalysis-NLIbias/3tks607u/checkpoints/epoch=4-step=28654.ckpt
+
+# starting from SNLI+MNLI full
+DatasetAnalysis-NLIbias/1jfuakpr/checkpoints/epoch=4-step=122719.ckpt
+
+CUDA_VISIBLE_DEVICES=0 python train_classifier.py --dataset F --batch_size 8 \
+     --pretrained_path DatasetAnalysis-NLIbias/1jfuakpr/checkpoints/epoch=4-step=122719.ckpt
