@@ -110,3 +110,8 @@ DatasetAnalysis-NLIbias/1jfuakpr/checkpoints/epoch=4-step=122719.ckpt
 
 CUDA_VISIBLE_DEVICES=0 python train_classifier.py --dataset F --batch_size 8 \
      --pretrained_path DatasetAnalysis-NLIbias/1jfuakpr/checkpoints/epoch=4-step=122719.ckpt
+
+# starting from SNLI+MNLI+FEVER full
+CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
+     --dataset A3 --batch_size 36 --s2only --lr 0.000005 \
+     --pretrained_path DatasetAnalysis-NLIbias/117sodk3/checkpoints/epoch=24-step=651099.ckpt
