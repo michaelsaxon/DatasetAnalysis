@@ -17,7 +17,7 @@ def collect_importance_maps_and_posteriors(nli_dataset, ltmodel):
     for batch in tqdm(nli_dataset.test_dataloader()):
         cuda_dict(batch)
         batch_posts = ltmodel(input_ids = batch['input_ids'], attention_mask=batch['attention_mask'], 
-            return_hidden_states = True)
+            output_hidden_states = True)
         print(batch_posts)
         local_grad = torch.autograd.grad(batch_posts.logits,
             batch_posts.hidden_states[0], retain_graph = True,
