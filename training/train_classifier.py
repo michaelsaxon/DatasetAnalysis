@@ -41,6 +41,7 @@ VALID_DATASETS = {
     "A1": ("anli", 1, ["context", "hypothesis"], False),
     "A2": ("anli", 2, ["context", "hypothesis"], False),
     "A3": ("anli", 3, ["context", "hypothesis"], False),
+    "AA": ("anli_all", None, ["context", "hypothesis"], False),
     "M" : ("mnli", None, ["sentence1", "sentence2"], True),
     "OC" : ("ocnli", None, ["sentence1", "sentence2"], False),
     "F" : ("fever", None, ["query", "context"], True),
@@ -167,8 +168,14 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
         'fever': f'nli_fever/{partition}_labels.jsonl'
     }
 
-    with open(PurePath(basepath + "/" + registered_path[ds])) as f:
-        lines = f.readlines()
+    if dataset == "AA":
+        lines = []
+        for r in [1, 2, 3]:
+            with open(PurePath(basepath + f'/anli_v1.0/R{r}/{partition}.jsonl')) as f:
+                lines += f.readlines()
+    else:
+        with open(PurePath(basepath + "/" + registered_path[ds])) as f:
+            lines = f.readlines()
 
     sents = []
 
