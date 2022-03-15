@@ -42,7 +42,7 @@ def padcombo(list_of_2darrays):
     length = max(map(lambda x: x.shape[1], list_of_2darrays))
     return np.concatenate(
         list(map(lambda x: np.pad(x, ((0,0),(0,length-x.shape[1]))), list_of_2darrays)),
-        -1)
+        0)
 
 
 def get_numpy_preds_imp_maps(nli_data, ltmodel):
