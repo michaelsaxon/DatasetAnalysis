@@ -79,6 +79,17 @@ def row_agreements(maps_1, maps_2):
     return cosine_sim(maps_1, maps_2)
 
 
+def get_top_n_by_row(mat, n):
+    m1_top_10 = np.argsort(mat)[:,n]
+    print(m1_top_10)
+    tops = []
+    for i in range(mat.shape[0]):
+        tops.append(mat[i,m1_top_10[i]])
+    tops = np.expand_dims(np.array(tops),0)
+    out = mat * (mat > m1_top_10)
+    return out / np.expand_dims(out.sum(-1),1)
+
+
 @click.command()
 @click.option('--n_gpus', default=1, help='number of gpus')
 @click.option('--dataset', help="S, M, A1, A2, A3, OC, SICK, etc")
@@ -129,15 +140,9 @@ def main(n_gpus, dataset, batch_size):
     s2_attn_full = np.not_equal(maps_2, 0) * maps_1
     s2_attn_full = s2_attn_full.sum(-1).squeeze()
 
-    m1_top_10 = np.argsort(maps_1)[:,10]
-    print(m1_top_10)
-    m1_top_10 = maps_1[:,m1_top_10]
-    print(m1_top_10)
-    maps_1_top = maps_1 * (maps_1 > m1_top_10)
-    m2_top_10 = maps_2[np.argsort(maps_2)[:,10]]
-    maps_2_top = maps_2 * (maps_2 > m2_top_10)
-    map_top_agreement = row_agreements(maps_1_top / np.expand_dims(maps_1_top.sum(-1), axis=1), 
-        maps_2_top/ np.expand_dims(maps_2_top.sum(-1), axis=1))
+    maps_1_top = get_top_n_by_row(maps_1, 10)
+    maps_2_top = get_top_n_by_row(maps_2, 10)
+    map_top_agreement = row_agreements(maps_1_top, maps_2_top)
 
 
     labs_1 = labs_1.squeeze()
