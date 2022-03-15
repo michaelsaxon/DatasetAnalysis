@@ -133,7 +133,8 @@ def main(n_gpus, dataset, batch_size):
     maps_1_top = maps_1 * (maps_1 > m1_top_10)
     m2_top_10 = maps_2[np.argsort(maps_2)[:,10]]
     maps_2_top = maps_2 * (maps_2 > m2_top_10)
-    map_top_agreement = row_agreements(maps_1_top / maps_1_top.sum(-1), maps_2_top/ maps_2_top.sum(-1))
+    map_top_agreement = row_agreements(maps_1_top / np.expand_dims(maps_1_top.sum(-1), axis=1), 
+        maps_2_top/ np.expand_dims(maps_2_top.sum(-1), axis=1))
 
 
     labs_1 = labs_1.squeeze()
