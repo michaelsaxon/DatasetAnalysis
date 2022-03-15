@@ -130,6 +130,7 @@ def main(n_gpus, dataset, batch_size):
     s2_attn_full = s2_attn_full.sum(-1).squeeze()
 
     m1_top_10 = maps_1[np.argsort(maps_1)[:,10]]
+    print(m1_top_10)
     maps_1_top = maps_1 * (maps_1 > m1_top_10)
     m2_top_10 = maps_2[np.argsort(maps_2)[:,10]]
     maps_2_top = maps_2 * (maps_2 > m2_top_10)
