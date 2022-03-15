@@ -1,5 +1,5 @@
 """
-CUDA_VISIBLE_DEVICES=1 python compare_runs.py --dataset A1
+CUDA_VISIBLE_DEVICES=0 python compare_runs.py --dataset A1
 """
 
 from train_classifier import *
@@ -44,12 +44,12 @@ def get_numpy_preds_imp_maps(nli_data, ltmodel):
     decisions_list = []
     labels_list = []
     for b_impmaps, b_posts, b_labs in collect_importance_maps_and_posteriors(nli_data, ltmodel):
-        print(batch_decisions.shape)
         print(batch_impmaps.shape)
         batch_impmaps = b_impmaps.cpu().detach().numpy()
         imp_maps_list.append(batch_impmaps)
         batch_decisions = torch.max(b_posts, -1).indices
         batch_decisions = batch_decisions.cpu().detach().numpy()
+        print(batch_decisions.shape)
         batch_labs = b_labs.cpu().detach().numpy()
         decisions_list.append(batch_decisions)
         labels_list.append(batch_labs)
