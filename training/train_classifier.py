@@ -343,7 +343,7 @@ def choose_load_model_tokenizer(model_id, dataset):
     elif lang == "zh":
         return load_model_tokenizer(model_id, BertForSequenceClassification, BertTokenizer)
     elif lang == "multi":
-        return load_model_tokenizer(model_id, AutoModelForSequenceClassification, AutoTokenizer)
+        return load_model_tokenizer(model_id, RobertaForSequenceClassification, RobertaTokenizer)
     else:
         raise NotImplementedError
 
