@@ -157,5 +157,5 @@ CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
 # training XNLI
 
 CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
-     --dataset OC --model_id xlm-roberta-base \
-     --batch_size 128 --n_epochs 25
+     --dataset X --model_id xlm-roberta-base \
+     --batch_size 16 --n_epochs 25
