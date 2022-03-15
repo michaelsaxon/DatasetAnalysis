@@ -68,7 +68,7 @@ def cosine_sim(mat_1, mat_2):
     num = mat_1 * mat_2
     denom_1 = mat_1 * mat_1
     denom_2 = mat_2 * mat_2
-    num =  num / (np.sqrt(denom_1.sum(-1)) + np.sqrt(denom_2.sum(-1)))
+    num =  num.sum(-1) / (np.sqrt(denom_1.sum(-1)) + np.sqrt(denom_2.sum(-1)))
     return num.sum()
 
 @click.command()
