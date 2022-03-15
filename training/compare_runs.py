@@ -113,12 +113,10 @@ def main(n_gpus, dataset, batch_size):
 
     # align maps_1 and maps_2
     total_size = max(maps_1.shape[1], maps_2.shape[1])
-    print(maps_2.shape)
-    print(maps_2.sum(-1))
     maps_1 = np.pad(maps_1, ((0,0),(total_size-maps_1.shape[1],0)))
     maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
     # cosine sim
-    maps_agreement = cosine_sim(maps_1, maps_2)
+    map_agreement = cosine_sim(maps_1, maps_2)
     #print(map_agreement)
     # how much of the attention weight is in s2 for regular condition
     s2_attn_full = np.equal(maps_2, 0) * maps_1
