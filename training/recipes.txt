@@ -113,5 +113,40 @@ CUDA_VISIBLE_DEVICES=0 python train_classifier.py --dataset F --batch_size 8 \
 
 # starting from SNLI+MNLI+FEVER full
 CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
-     --dataset A3 --batch_size 36 --lr 0.000005 \
+     --dataset A3 --batch_size 14 --lr 0.000005 \
+     --pretrained_path DatasetAnalysis-NLIbias/117sodk3/checkpoints/epoch=24-step=651099.ckpt
+
+CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
+     --dataset AA --batch_size 10 --lr 0.000005 \
+     --pretrained_path DatasetAnalysis-NLIbias/117sodk3/checkpoints/epoch=24-step=651099.ckpt
+
+CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
+     --dataset AA --batch_size 10 --lr 0.000005
+
+CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
+     --dataset AA --batch_size 20 --s2only --n_epochs 10 --lr 0.000005
+
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
+     --dataset AA --batch_size 20 --s2only --n_epochs 10 --lr 0.000005 \
+     --pretrained_path DatasetAnalysis-NLIbias/117sodk3/checkpoints/epoch=24-step=651099.ckpt
+
+CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
+     --dataset AA --batch_size 10 \
+     --pretrained_path DatasetAnalysis-NLIbias/117sodk3/checkpoints/epoch=24-step=651099.ckpt
+
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
+     --dataset AA --batch_size 10
+
+
+CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
+     --dataset A1 --batch_size 36 --n_epochs 12 \
+     --pretrained_path DatasetAnalysis-NLIbias/117sodk3/checkpoints/epoch=24-step=651099.ckpt
+
+CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
+     --dataset A1 --batch_size 36 --n_epochs 15 --lr 0.000005 \
+     --pretrained_path DatasetAnalysis-NLIbias/117sodk3/checkpoints/epoch=24-step=651099.ckpt
+
+
+CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
+     --dataset A2 --batch_size 36 --n_epochs 25 \
      --pretrained_path DatasetAnalysis-NLIbias/117sodk3/checkpoints/epoch=24-step=651099.ckpt

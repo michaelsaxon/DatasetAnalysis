@@ -4,3 +4,10 @@ test only
 jsonl unicode works on loads
 we'd want to test a pre-trained model
 
+gold_label (written in full form)
+sentence1
+sentence2
+
+MNLI
+gold_label (full form)
+sentence_1

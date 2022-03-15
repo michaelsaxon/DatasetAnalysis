@@ -45,7 +45,8 @@ VALID_DATASETS = {
     "M" : ("mnli", None, ["sentence1", "sentence2"], True),
     "OC" : ("ocnli", None, ["sentence1", "sentence2"], False),
     "F" : ("fever", None, ["query", "context"], True),
-    "CF" : ("counterfactual", None, ["sentence1", "sentence2"], False)
+    "CF" : ("counterfactual", None, ["sentence1", "sentence2"], False),
+    "X" : ("xnli", None, ["sentence1", "sentence2"], False)
 }
 
 FULL_LABEL_MAP = {
@@ -165,7 +166,8 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
         'mnli': f'multinli_1.0/multinli_1.0_{partition}.jsonl',
         'anli': f'anli_v1.0/R{r}/{partition}.jsonl',
         'ocnli': f'OCNLI/data/ocnli/{partition}.json',
-        'fever': f'nli_fever/{partition}_labels.jsonl'
+        'fever': f'nli_fever/{partition}_labels.jsonl',
+        'xnli': f'XNLI-1.0/xnli.{partition}.jsonl'
     }
 
     if dataset == "AA":
@@ -184,7 +186,7 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
         if dataset == "S":
             lst = list(line["annotator_labels"])
             label = max(set(lst), key=lst.count)
-        elif dataset == "M":
+        elif dataset == "M" or dataset == "X":
             label = line["gold_label"]
         elif dataset == "OC":
             label = line["label"].lower()
@@ -398,7 +400,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
         tags["s1only"] = 1
     else:
         tags["train"] = 1
-        tags["baselline"] = 1
+        tags["baseline"] = 1
     if pretrained_path != "":
         tags["from_pretrained"] = 1
     tags = list(tags.keys())
