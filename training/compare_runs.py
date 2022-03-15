@@ -69,7 +69,7 @@ def cosine_sim(mat_1, mat_2):
     denom_1 = mat_1 * mat_1
     denom_2 = mat_2 * mat_2
     num =  num.sum(-1) / (np.sqrt(denom_1.sum(-1)) + np.sqrt(denom_2.sum(-1)))
-    return num.sum()
+    return num.mean()
 
 @click.command()
 @click.option('--n_gpus', default=1, help='number of gpus')
