@@ -153,6 +153,7 @@ def main(n_gpus, dataset, batch_size, top_n):
     correct_agreement = agreement * correct_1 * correct_2
     correct_1 + correct_2
 
+    '''
     print(agreement.sum() / agreement.shape[0])
     print(correct_agreement.sum() / correct_1.sum())
     print(correct_agreement.sum() / correct_2.sum())
@@ -165,7 +166,8 @@ def main(n_gpus, dataset, batch_size, top_n):
     print(np.sum(map_agreement * agreement) / agreement.sum())
     print(np.sum(map_top_agreement * agreement) / agreement.sum())
     print(np.sum(s2_attn_full * agreement) / agreement.sum())
-
+    '''
+    print(f"{agreement.sum() / agreement.shape[0]*100:.2f},{agreement.sum() / correct_1.sum()*100:.2f},{map_agreement.mean()}")
 
 
 if __name__ == "__main__":
