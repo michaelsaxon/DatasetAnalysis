@@ -86,7 +86,7 @@ def get_top_n_by_row(mat, n):
     for i in range(mat.shape[0]):
         tops.append(mat[i,m1_top_10[i]])
     tops = np.expand_dims(np.array(tops),0)
-    out = mat * (mat > m1_top_10)
+    out = mat * (mat > tops)
     return out / np.expand_dims(out.sum(-1),1)
 
 
