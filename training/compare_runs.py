@@ -41,7 +41,7 @@ def get_numpy_preds(nli_data, ltmodel):
 def padcombo(list_of_2darrays):
     length = max(map(lambda x: x.shape[1], list_of_2darrays))
     return np.concatenate(
-        list(map(lambda x: np.pad(x, ((0,0),(0,length-x.shape[1]))), list_of_2darrays)),
+        list(map(lambda x: np.pad(x, ((0,0),(length-x.shape[1],0))), list_of_2darrays)),
         0)
 
 
@@ -104,6 +104,13 @@ def main(n_gpus, dataset, batch_size):
 
     dec_2, labs_2, maps_2 = get_numpy_preds_imp_maps(nli_data_2, ltmodel)
 
+    # align maps_1 and maps_2
+    total_size = max(maps_1.shape[1], maps_2.shape[1])
+    maps_1 = np.pad(maps_1, ((0,0),(total_size-maps_1.shape[1],0)))
+    maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
+    map_agreement = torch.sum(maps_1 * maps_2, -1).squeeze()
+
+
     labs_1 = labs_1.squeeze()
     labs_2 = labs_2.squeeze()
     agreement = np.equal(dec_1, dec_2)
@@ -116,6 +123,8 @@ def main(n_gpus, dataset, batch_size):
     print(correct_agreement.sum() / correct_1.sum())
     print(correct_agreement.sum() / correct_2.sum())
     print(correct_agreement.sum() / agreement.sum())
+    print("map agreement lmao")
+    print(map_agreement.mean())
 
 
 if __name__ == "__main__":
