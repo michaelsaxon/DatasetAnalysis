@@ -38,22 +38,26 @@ def get_numpy_preds(nli_data, ltmodel):
     labels_list = np.concatenate(labels_list)
     return decisions_list, labels_list
 
+def padcombo(list_of_2darrays):
+    length = max(map(lambda x: x.shape, list_of_2darrays))
+    return np.concatenate(map(lambda x: np.pad(x, ((0,0),(0,length-x.shape[1])))), -1)
+
 
 def get_numpy_preds_imp_maps(nli_data, ltmodel):
     imp_maps_list = []
     decisions_list = []
     labels_list = []
     for b_impmaps, b_posts, b_labs in collect_importance_maps_and_posteriors(nli_data, ltmodel):
-        #print(b_impmaps.shape)
+        print(b_impmaps.shape)
         batch_impmaps = b_impmaps.cpu().detach().numpy()
         imp_maps_list.append(batch_impmaps)
         batch_decisions = torch.max(b_posts, -1).indices
         batch_decisions = batch_decisions.cpu().detach().numpy()
-        print(batch_decisions.shape)
+        #print(batch_decisions.shape)
         batch_labs = b_labs.cpu().detach().numpy()
         decisions_list.append(batch_decisions)
         labels_list.append(batch_labs)
-    imp_maps_list = np.concatenate(imp_maps_list)
+    imp_maps_list = padcombo(imp_maps_list)
     decisions_list = np.concatenate(decisions_list)
     labels_list = np.concatenate(labels_list)
     return decisions_list, labels_list, imp_maps_list
