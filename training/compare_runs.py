@@ -64,6 +64,13 @@ def get_numpy_preds_imp_maps(nli_data, ltmodel):
     return decisions_list, labels_list, imp_maps_list
 
 
+def cosine_sim(mat_1, mat_2):
+    num = mat_1 * mat_2
+    denom_1 = mat_1 * mat_1
+    denom_2 = mat_2 * mat_2
+    num =  num / (np.sqrt(denom_1.sum(-1)) + np.sqrt(denom_2.sum(-1)))
+    return num.sum()
+
 @click.command()
 @click.option('--n_gpus', default=1, help='number of gpus')
 @click.option('--dataset', help="S, M, A1, A2, A3, OC, SICK, etc")
@@ -110,9 +117,9 @@ def main(n_gpus, dataset, batch_size):
     print(maps_2.sum(-1))
     maps_1 = np.pad(maps_1, ((0,0),(total_size-maps_1.shape[1],0)))
     maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
-    maps_agreement = maps_1 * maps_2
+    # cosine sim
+    maps_agreement = cosine_sim(maps_1, maps_2)
     #print(map_agreement)
-    map_agreement = maps_agreement.sum(-1).squeeze()
     # how much of the attention weight is in s2 for regular condition
     s2_attn_full = np.equal(maps_2, 0) * maps_1
     s2_attn_full = s2_attn_full.sum(-1).squeeze()
