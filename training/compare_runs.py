@@ -139,8 +139,8 @@ def main(n_gpus, dataset, batch_size):
     s2_attn_full = np.not_equal(maps_2, 0) * maps_1
     s2_attn_full = s2_attn_full.sum(-1).squeeze()
 
-    maps_1_top = get_top_n_by_row(maps_1, 10)
-    maps_2_top = get_top_n_by_row(maps_2, 10)
+    maps_1_top = get_top_n_by_row(maps_1, 5)
+    maps_2_top = get_top_n_by_row(maps_2, 5)
     map_top_agreement = row_agreements(maps_1_top, maps_2_top)
 
 
