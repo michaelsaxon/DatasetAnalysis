@@ -46,7 +46,9 @@ VALID_DATASETS = {
     "OC" : ("ocnli", None, ["sentence1", "sentence2"], False),
     "F" : ("fever", None, ["query", "context"], True),
     "CF" : ("counterfactual", None, ["sentence1", "sentence2"], False),
-    "X" : ("xnli", None, ["sentence1", "sentence2"], False)
+    "X" : ("xnli", None, ["sentence1", "sentence2"], False),
+    "MU" : ("mnli_u", None, ["sentence1", "sentence2"], True),
+    "MB" : ("mnli_b", None, ["sentence1", "sentence2"], True),
 }
 
 FULL_LABEL_MAP = {
@@ -167,7 +169,9 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
         'anli': f'anli_v1.0/R{r}/{partition}.jsonl',
         'ocnli': f'OCNLI/data/ocnli/{partition}.json',
         'fever': f'nli_fever/{partition}_labels.jsonl',
-        'xnli': f'XNLI-1.0/xnli.{partition}.jsonl'
+        'xnli': f'XNLI-1.0/xnli.{partition}.jsonl',
+        'mnli_u' : f'multinli_1.0/unmatched/{partition}.jsonl',
+        'mnli_u' : f'multinli_1.0/matched/{partition}.jsonl',
     }
 
     if dataset == "AA":
@@ -186,7 +190,7 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
         if dataset == "S":
             lst = list(line["annotator_labels"])
             label = max(set(lst), key=lst.count)
-        elif dataset == "M" or dataset == "X":
+        elif dataset == "M" or dataset == "X" or dataset == "MU" or dataset == "MB":
             label = line["gold_label"]
         elif dataset == "OC":
             label = line["label"].lower()

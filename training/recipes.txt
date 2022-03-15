@@ -159,3 +159,25 @@ CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
 CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
      --dataset X --model_id xlm-roberta-base \
      --batch_size 16 --n_epochs 25
+
+CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
+     --dataset X --model_id xlm-roberta-base --batch_size 48 \
+     --s2only --n_epochs 25
+
+
+
+CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 \
+     --dataset MU --batch_size 16 \
+      --n_epochs 3
+
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --n_gpus 1 \
+     --dataset MU --batch_size 24 \
+     --s2only --n_epochs 25
+
+CUDA_VISIBLE_DEVICES=4 python train_classifier.py --n_gpus 1 \
+     --dataset MB --batch_size 16 \
+      --n_epochs 3
+
+CUDA_VISIBLE_DEVICES=5 python train_classifier.py --n_gpus 1 \
+     --dataset MB --batch_size 24 \
+     --s2only --n_epochs 3

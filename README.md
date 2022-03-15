@@ -53,9 +53,11 @@ You will want to set up a working directory where trained models, precomp'd embe
 - [x] s1only
 - [x] Loading from a checkpoint in train_classifier.py
 - [X] counterfactualNLI
+- [x] XNLI
+- [ ] implement MNLI separate train/test for each split
 - [ ] Using gradient to find word-level salience in decisions (to further identify cheating)
+- [ ] comparing gradient salience importance between the two models
 - [ ] Binary label for a decision: is the salience in S1 or S2 
-- [ ] XNLI (for future work)
 - [ ] aNLI (for future work)
 - [ ] modularized graph analysis
 - [ ] PECO scoring for lesioned (instead of S2only) (which might matter)
