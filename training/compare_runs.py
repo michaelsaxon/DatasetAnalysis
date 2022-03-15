@@ -119,7 +119,7 @@ def main(n_gpus, dataset, batch_size):
     map_agreement = cosine_sim(maps_1, maps_2)
     #print(map_agreement)
     # how much of the attention weight is in s2 for regular condition
-    s2_attn_full = np.equal(maps_2, 0) * maps_1
+    s2_attn_full = np.not_equal(maps_2, 0) * maps_1
     s2_attn_full = s2_attn_full.sum(-1).squeeze()
 
     labs_1 = labs_1.squeeze()
