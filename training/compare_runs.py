@@ -109,9 +109,10 @@ def main(n_gpus, dataset, batch_size):
     maps_1 = np.pad(maps_1, ((0,0),(total_size-maps_1.shape[1],0)))
     maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
     maps_agreement = maps_1 * maps_2
-    print(map_agreement)
-    map_agreement = torch.sum(maps_agreement, dim=-1).squeeze()
-
+    #print(map_agreement)
+    map_agreement = np.sum(maps_agreement, dim=-1).squeeze()
+    # how much of the attention weight is in s2 for regular condition
+    s2_attn_full = np.sum(np.equal(maps_2, 0) * maps_1, dim=-1).squeeze()
 
     labs_1 = labs_1.squeeze()
     labs_2 = labs_2.squeeze()
@@ -127,7 +128,7 @@ def main(n_gpus, dataset, batch_size):
     print(correct_agreement.sum() / agreement.sum())
     print("map agreement lmao")
     print(map_agreement.mean())
-
+    print(s2_attn_full.mean())
 
 if __name__ == "__main__":
     main()
