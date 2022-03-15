@@ -150,3 +150,12 @@ CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
 CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
      --dataset A2 --batch_size 36 --n_epochs 25 \
      --pretrained_path DatasetAnalysis-NLIbias/117sodk3/checkpoints/epoch=24-step=651099.ckpt
+
+
+
+
+# training XNLI
+
+CUDA_VISIBLE_DEVICES=0 python train_classifier.py --n_gpus 1 \
+     --dataset OC --model_id xlm-roberta-base \
+     --batch_size 128 --n_epochs 25

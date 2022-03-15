@@ -13,7 +13,7 @@ import numpy as np
 
 import click
 from transformers import RobertaTokenizer, RobertaForSequenceClassification, BertTokenizer, BertForSequenceClassification
-from transformers import AdamW
+from transformers import AdamW, AutoTokenizer, AutoModelSequenceClassification
 import torch.nn.functional as F
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -334,12 +334,16 @@ def load_model_tokenizer(model_id, model_class, tokenizer_class, num_labels=3):
 def choose_load_model_tokenizer(model_id, dataset):
     if dataset == "OC":
         lang = "zh"
+    elif dataset == "X":
+        lang = "multi"
     else:
         lang = "en"
     if lang == "en":
         return load_model_tokenizer(model_id, RobertaForSequenceClassification, RobertaTokenizer)
     elif lang == "zh":
         return load_model_tokenizer(model_id, BertForSequenceClassification, BertTokenizer)
+    elif lang == "multi":
+        return load_model_tokenizer(model_id, AutoModelSequenceClassification, AutoTokenizer)
     else:
         raise NotImplementedError
 
@@ -375,6 +379,8 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     
     if dataset == "OC":
         lang = "zh"
+    elif dataset == "X":
+        lang = "multi"
     else:
         lang = "en"
 
