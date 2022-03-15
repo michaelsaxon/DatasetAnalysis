@@ -110,9 +110,10 @@ def main(n_gpus, dataset, batch_size):
     maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
     maps_agreement = maps_1 * maps_2
     #print(map_agreement)
-    map_agreement = np.sum(maps_agreement, dim=-1).squeeze()
+    map_agreement = maps_agreement.sum(-1).squeeze()
     # how much of the attention weight is in s2 for regular condition
-    s2_attn_full = np.sum(np.equal(maps_2, 0) * maps_1, dim=-1).squeeze()
+    s2_attn_full = np.equal(maps_2, 0) * maps_1
+    s2_attn_full = s2_attn_full.sum(-1).squeeze()
 
     labs_1 = labs_1.squeeze()
     labs_2 = labs_2.squeeze()
