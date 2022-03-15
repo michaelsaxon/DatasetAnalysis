@@ -22,6 +22,7 @@ def collect_importance_maps_and_posteriors(nli_dataset, ltmodel):
             batch_posts.hidden_states[0], retain_graph = True,
             grad_outputs = torch.ones_like(batch_posts.logits))[0]
         local_importance_maps = torch.norm(local_grad, dim=2) / torch.sum(torch.norm(local_grad, dim=2))
+        print(local_importance_maps.shape)
         print(local_importance_maps.sum(-1)[0])
         yield local_importance_maps, batch_posts.logits, batch["labels"]
 
