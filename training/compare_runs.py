@@ -18,7 +18,6 @@ def collect_importance_maps_and_posteriors(nli_dataset, ltmodel):
         cuda_dict(batch)
         batch_posts = ltmodel(input_ids = batch['input_ids'], attention_mask=batch['attention_mask'], 
             output_hidden_states = True)
-        print(batch_posts.logits.shape)
         local_grad = torch.autograd.grad(batch_posts.logits,
             batch_posts.hidden_states[0], retain_graph = True,
             grad_outputs = torch.ones_like(batch_posts.logits))[0]
@@ -50,7 +49,7 @@ def get_numpy_preds_imp_maps(nli_data, ltmodel):
         imp_maps_list.append(batch_impmaps)
         batch_decisions = torch.max(b_posts, -1).indices
         batch_decisions = batch_decisions.cpu().detach().numpy()
-        #print(batch_decisions.shape)
+        print(batch_decisions.shape)
         batch_labs = b_labs.cpu().detach().numpy()
         decisions_list.append(batch_decisions)
         labels_list.append(batch_labs)
