@@ -1,7 +1,7 @@
 """
 Examples
 
-CUDA_VISIBLE_DEVICES=3 python dataset_to_clusters.py --dataset A1 --s2only --n_clusters 25
+CUDA_VISIBLE_DEVICES=2 python dataset_to_clusters.py --dataset A1 --s2only
 
 """
 import click
@@ -226,9 +226,10 @@ def tsne_fit_transform(embs, perp, tmp_save_dir = None):
 @click.option('--biased', is_flag=True)
 @click.option('--extreme_bias', is_flag=True)
 @click.option('--s2only', is_flag=True)
+@click.option('--s1only', is_flag=True)
 @click.option('--lastdense', is_flag=True)
 @click.option('--n_clusters', default=50)
-def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only, n_clusters, lastdense):
+def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense):
     model_id, pretrained_path = read_models_csv(dataset)
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
@@ -245,10 +246,13 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s2only, n_clusters, 
     model.cuda()
     ltmodel.cuda()
 
+    if s1only:
+        s2only = False
+
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir", "intermed_comp_dir_base"])
     
     intermed_comp_dir = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
-        n_clusters, lastdense, (biased, extreme_bias, s2only))
+        n_clusters, lastdense, (biased, extreme_bias, s2only or s1only))
 
     nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor, s2only)
     nli_data.prepare_data(test_only = True)

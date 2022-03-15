@@ -1,5 +1,5 @@
 """
-CUDA_VISIBLE_DEVICES=0 python compare_runs.py --dataset A1
+CUDA_VISIBLE_DEVICES=2 python compare_runs.py --dataset M
 """
 
 from train_classifier import *
@@ -39,14 +39,16 @@ def get_numpy_preds(nli_data, ltmodel):
     labels_list = np.concatenate(labels_list)
     return decisions_list, labels_list
 
-def padcombo(list_of_2darrays):
+def padcombo(list_of_2darrays, pad_right = False):
     length = max(map(lambda x: x.shape[1], list_of_2darrays))
-    return np.concatenate(
-        list(map(lambda x: np.pad(x, ((0,0),(length-x.shape[1],0))), list_of_2darrays)),
-        0)
+    if pad_right:
+        padded = list(map(lambda x: np.pad(x, ((0,0),(0,length-x.shape[1]))), list_of_2darrays))
+    else:
+        padded = list(map(lambda x: np.pad(x, ((0,0),(length-x.shape[1],0))), list_of_2darrays))
+    return np.concatenate(padded,0)
 
 
-def get_numpy_preds_imp_maps(nli_data, ltmodel):
+def get_numpy_preds_imp_maps(nli_data, ltmodel, pad_right):
     imp_maps_list = []
     decisions_list = []
     labels_list = []
@@ -59,7 +61,7 @@ def get_numpy_preds_imp_maps(nli_data, ltmodel):
         batch_labs = b_labs.cpu().detach().numpy()
         decisions_list.append(batch_decisions)
         labels_list.append(batch_labs)
-    imp_maps_list = padcombo(imp_maps_list)
+    imp_maps_list = padcombo(imp_maps_list, pad_right)
     decisions_list = np.concatenate(decisions_list)
     labels_list = np.concatenate(labels_list)
     return decisions_list, labels_list, imp_maps_list
@@ -94,10 +96,11 @@ def get_top_n_by_row(mat, n):
 @click.option('--dataset', help="S, M, A1, A2, A3, OC, SICK, etc")
 @click.option('--batch_size', default=16)
 @click.option('--top_n', default=10)
-def main(n_gpus, dataset, batch_size, top_n):
+@click.option('--s1only', is_flag=True)
+def main(n_gpus, dataset, batch_size, top_n, s1only):
     # do 2 diff pretrained paths
     model_id, pretrained_path_1 = read_models_csv(dataset)
-    _, pretrained_path_2 = read_models_csv(dataset, s2only=True)
+    _, pretrained_path_2 = read_models_csv(dataset, s2only=not s1only, s1only = s1only)
 
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
@@ -120,7 +123,7 @@ def main(n_gpus, dataset, batch_size, top_n):
 
     print("Running model 1...")
 
-    dec_1, labs_1, maps_1 = get_numpy_preds_imp_maps(nli_data_1, ltmodel)
+    dec_1, labs_1, maps_1 = get_numpy_preds_imp_maps(nli_data_1, ltmodel, s1only)
 
     ltmodel.load_state_dict(ckpt_2["state_dict"])
     model.cuda()
@@ -128,10 +131,14 @@ def main(n_gpus, dataset, batch_size, top_n):
 
     print("Running model 2...")
 
-    dec_2, labs_2, maps_2 = get_numpy_preds_imp_maps(nli_data_2, ltmodel)
+    dec_2, labs_2, maps_2 = get_numpy_preds_imp_maps(nli_data_2, ltmodel, s1only)
     total_size = max(maps_1.shape[1], maps_2.shape[1])
-    maps_1 = np.pad(maps_1, ((0,0),(total_size-maps_1.shape[1],0)))
-    maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
+    if s1only:
+        maps_1 = np.pad(maps_1, ((0,0),(0,total_size-maps_1.shape[1])))
+        maps_2 = np.pad(maps_2, ((0,0),(0,total_size-maps_2.shape[1])))    
+    else:
+        maps_1 = np.pad(maps_1, ((0,0),(total_size-maps_1.shape[1],0)))
+        maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
 
     # align maps_1 and maps_2
     map_agreement = row_agreements(maps_1, maps_2)
