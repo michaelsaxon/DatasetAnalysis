@@ -115,6 +115,7 @@ def main(n_gpus, dataset, batch_size):
     total_size = max(maps_1.shape[1], maps_2.shape[1])
     maps_1 = np.pad(maps_1, ((0,0),(total_size-maps_1.shape[1],0)))
     maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
+    print(maps_2.shape[-1])
     # cosine sim
     map_agreement = cosine_sim(maps_1, maps_2)
     #print(map_agreement)
