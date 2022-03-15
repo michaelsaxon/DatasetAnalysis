@@ -92,7 +92,7 @@ def get_top_n_by_row(mat, n):
 @click.command()
 @click.option('--n_gpus', default=1, help='number of gpus')
 @click.option('--dataset', help="S, M, A1, A2, A3, OC, SICK, etc")
-@click.option('--batch_size', default=48)
+@click.option('--batch_size', default=16)
 @click.option('--top_n', default=10)
 def main(n_gpus, dataset, batch_size, top_n):
     # do 2 diff pretrained paths
