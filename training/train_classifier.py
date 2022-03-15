@@ -171,7 +171,7 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
         'fever': f'nli_fever/{partition}_labels.jsonl',
         'xnli': f'XNLI-1.0/xnli.{partition}.jsonl',
         'mnli_u' : f'multinli_1.0/unmatched/{partition}.jsonl',
-        'mnli_u' : f'multinli_1.0/matched/{partition}.jsonl',
+        'mnli_b' : f'multinli_1.0/matched/{partition}.jsonl',
     }
 
     if dataset == "AA":
