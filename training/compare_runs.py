@@ -167,7 +167,7 @@ def main(n_gpus, dataset, batch_size, top_n):
     print(np.sum(map_top_agreement * agreement) / agreement.sum())
     print(np.sum(s2_attn_full * agreement) / agreement.sum())
     '''
-    print(f"{agreement.sum() / agreement.shape[0]*100:.2f},{agreement.sum() / correct_1.sum()*100:.2f},{map_agreement.mean()}")
+    print(f"{agreement.sum() / agreement.shape[0]*100:.2f},{agreement.sum() / correct_1.sum()*100:.2f},{map_agreement.mean()*100:.2f}")
 
 
 if __name__ == "__main__":
