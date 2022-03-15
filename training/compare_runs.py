@@ -80,12 +80,11 @@ def row_agreements(maps_1, maps_2):
 
 
 def get_top_n_by_row(mat, n):
-    m1_top_10 = np.argsort(mat)[:,n]
+    m1_top_10 = np.argsort(mat)[:,-n]
     tops = []
     for i in range(mat.shape[0]):
         tops.append(mat[i,m1_top_10[i]])
     tops = np.expand_dims(np.array(tops),1)
-    print(tops[0,0])
     out = mat * (mat > tops)
     return out / np.expand_dims(out.sum(-1),1)
 
