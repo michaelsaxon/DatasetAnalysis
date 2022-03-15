@@ -131,7 +131,7 @@ def main(n_gpus, dataset, batch_size):
 
     m1_top_10 = np.argsort(maps_1)[:,10]
     print(m1_top_10)
-    m1_top_10 = maps_1[m1_top_10]
+    m1_top_10 = maps_1[:,m1_top_10]
     print(m1_top_10)
     maps_1_top = maps_1 * (maps_1 > m1_top_10)
     m2_top_10 = maps_2[np.argsort(maps_2)[:,10]]
