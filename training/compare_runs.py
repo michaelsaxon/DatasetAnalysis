@@ -74,9 +74,6 @@ def cosine_sim(mat_1, mat_2):
 
 
 def row_agreements(maps_1, maps_2):
-    total_size = max(maps_1.shape[1], maps_2.shape[1])
-    maps_1 = np.pad(maps_1, ((0,0),(total_size-maps_1.shape[1],0)))
-    maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
     print(maps_2.shape[-1])
     # cosine sim
     return cosine_sim(maps_1, maps_2)
@@ -121,6 +118,9 @@ def main(n_gpus, dataset, batch_size):
     print("Running model 2...")
 
     dec_2, labs_2, maps_2 = get_numpy_preds_imp_maps(nli_data_2, ltmodel)
+    total_size = max(maps_1.shape[1], maps_2.shape[1])
+    maps_1 = np.pad(maps_1, ((0,0),(total_size-maps_1.shape[1],0)))
+    maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
 
     # align maps_1 and maps_2
     map_agreement = row_agreements(maps_1, maps_2)
