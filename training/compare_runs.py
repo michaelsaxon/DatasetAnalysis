@@ -72,6 +72,16 @@ def cosine_sim(mat_1, mat_2):
     num =  num.sum(-1) / (np.sqrt(denom_1.sum(-1)) * np.sqrt(denom_2.sum(-1)))
     return num.mean()
 
+
+def row_agreements(maps_1, maps_2):
+    total_size = max(maps_1.shape[1], maps_2.shape[1])
+    maps_1 = np.pad(maps_1, ((0,0),(total_size-maps_1.shape[1],0)))
+    maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
+    print(maps_2.shape[-1])
+    # cosine sim
+    return cosine_sim(maps_1, maps_2)
+
+
 @click.command()
 @click.option('--n_gpus', default=1, help='number of gpus')
 @click.option('--dataset', help="S, M, A1, A2, A3, OC, SICK, etc")
@@ -113,16 +123,18 @@ def main(n_gpus, dataset, batch_size):
     dec_2, labs_2, maps_2 = get_numpy_preds_imp_maps(nli_data_2, ltmodel)
 
     # align maps_1 and maps_2
-    total_size = max(maps_1.shape[1], maps_2.shape[1])
-    maps_1 = np.pad(maps_1, ((0,0),(total_size-maps_1.shape[1],0)))
-    maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
-    print(maps_2.shape[-1])
-    # cosine sim
-    map_agreement = cosine_sim(maps_1, maps_2)
+    map_agreement = row_agreements(maps_1, maps_2)
     #print(map_agreement)
     # how much of the attention weight is in s2 for regular condition
     s2_attn_full = np.not_equal(maps_2, 0) * maps_1
     s2_attn_full = s2_attn_full.sum(-1).squeeze()
+
+    m1_top_10 = maps_1[np.argsort(maps_1)[:,10]]
+    maps_1_top = maps_1 * (maps_1 > m1_top_10)
+    m2_top_10 = maps_2[np.argsort(maps_2)[:,10]]
+    maps_2_top = maps_2 * (maps_2 > m2_top_10)
+    map_top_agreement = row_agreements(maps_1_top / maps_1_top.sum(-1), maps_2_top/ maps_2_top.sum(-1))
+
 
     labs_1 = labs_1.squeeze()
     labs_2 = labs_2.squeeze()
@@ -138,6 +150,7 @@ def main(n_gpus, dataset, batch_size):
     print(correct_agreement.sum() / agreement.sum())
     print("map agreement lmao")
     print(map_agreement.mean())
+    print(map_top_agreement.mean())
     print(s2_attn_full.mean())
 
 if __name__ == "__main__":
