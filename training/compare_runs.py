@@ -93,7 +93,8 @@ def get_top_n_by_row(mat, n):
 @click.option('--n_gpus', default=1, help='number of gpus')
 @click.option('--dataset', help="S, M, A1, A2, A3, OC, SICK, etc")
 @click.option('--batch_size', default=48)
-def main(n_gpus, dataset, batch_size):
+@click.option('--top_n', default=10)
+def main(n_gpus, dataset, batch_size, top_n):
     # do 2 diff pretrained paths
     model_id, pretrained_path_1 = read_models_csv(dataset)
     _, pretrained_path_2 = read_models_csv(dataset, s2only=True)
@@ -139,8 +140,8 @@ def main(n_gpus, dataset, batch_size):
     s2_attn_full = np.not_equal(maps_2, 0) * maps_1
     s2_attn_full = s2_attn_full.sum(-1).squeeze()
 
-    maps_1_top = get_top_n_by_row(maps_1, 5)
-    maps_2_top = get_top_n_by_row(maps_2, 5)
+    maps_1_top = get_top_n_by_row(maps_1, top_n)
+    maps_2_top = get_top_n_by_row(maps_2, top_n)
     map_top_agreement = row_agreements(maps_1_top, maps_2_top)
 
 
