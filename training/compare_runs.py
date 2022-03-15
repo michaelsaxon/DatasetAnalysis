@@ -108,7 +108,9 @@ def main(n_gpus, dataset, batch_size):
     total_size = max(maps_1.shape[1], maps_2.shape[1])
     maps_1 = np.pad(maps_1, ((0,0),(total_size-maps_1.shape[1],0)))
     maps_2 = np.pad(maps_2, ((0,0),(total_size-maps_2.shape[1],0)))
-    map_agreement = torch.sum(maps_1 * maps_2, dim=-1).squeeze()
+    maps_agreement = maps_1 * maps_2
+    print(map_agreement)
+    map_agreement = torch.sum(maps_agreement, dim=-1).squeeze()
 
 
     labs_1 = labs_1.squeeze()
