@@ -235,9 +235,14 @@ def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=3
     fig, ax = plt.subplots()
     colors = ['blue', 'orange', 'black']
     for i in range(3):
-        ax.scatter(np.stack(above_thresh[i])[:,0], np.stack(above_thresh[i])[:,1],
+        print(i)
+        above_thresh[i] = np.stack(above_thresh[i])
+        under_thresh[i] = np.stack(under_thresh[i])
+        print(above_thresh[i].shape)
+        print(under_thresh[i].shape)
+        ax.scatter(above_thresh[i][:,0], above_thresh[i][:,1],
         c = colors[i], marker="x")
-        ax.scatter(np.stack(under_thresh[i])[:,0], np.stack(under_thresh[i])[:,1],
+        ax.scatter(under_thresh[i][:,0], under_thresh[i][:,1],
         c = colors[i], marker="x", s=1)
     return fig
 
@@ -253,6 +258,7 @@ def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=3
 @click.option('--s1only', is_flag=True)
 @click.option('--lastdense', is_flag=True)
 @click.option('--n_clusters', default=50)
+@click.option('--tsne_thresh', default=2.5)
 def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense):
     model_id, pretrained_path = read_models_csv(dataset)
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
