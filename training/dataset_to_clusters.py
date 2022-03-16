@@ -259,7 +259,7 @@ def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=3
 @click.option('--lastdense', is_flag=True)
 @click.option('--n_clusters', default=50)
 @click.option('--tsne_thresh', default=2.5)
-def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense):
+def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense, tsne_thresh):
     model_id, pretrained_path = read_models_csv(dataset)
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
@@ -311,7 +311,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_cl
         for line in lines:
             print(line)
             f.write(line + "\n")
-    fig = plot_outliers(embs_pca, labs, embs_cll, clusters_xHs, tmp_save_dir=intermed_comp_dir)
+    fig = plot_outliers(embs_pca, labs, embs_cll, clusters_xHs, tmp_save_dir=intermed_comp_dir, threshold=tsne_thresh)
     fig.savefig("test.png")
 
 
