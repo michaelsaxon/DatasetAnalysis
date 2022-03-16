@@ -1,7 +1,7 @@
 """
 Examples
 
-CUDA_VISIBLE_DEVICES=2 python dataset_to_clusters.py --dataset CF --s1only
+CUDA_VISIBLE_DEVICES=0 python dataset_to_clusters.py --dataset CF --s2only
 
 """
 import click
@@ -305,7 +305,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_cl
         for line in lines:
             print(line)
             f.write(line + "\n")
-    fig = plot_outliers(embs_pca, labs, embs_cll, cluster_dists)
+    fig = plot_outliers(embs_pca, labs, embs_cll, cluster_dists, tmp_save_dir=intermed_comp_dir)
     fig.savefig("test.png")
 
 

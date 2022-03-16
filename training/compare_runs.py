@@ -1,5 +1,5 @@
 """
-CUDA_VISIBLE_DEVICES=2 python compare_runs.py --dataset CF --s1only
+CUDA_VISIBLE_DEVICES=0 python compare_runs.py --dataset CF --s2only
 """
 
 from train_classifier import *
