@@ -232,7 +232,7 @@ def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=3
             under_thresh[labels[i]].append(embs_tsne[i,:])
     # entailment:0, contradict:1, neutral:2
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(2,2))
     colors = ['blue', 'orange', 'black']
     for i in range(3):
         above_thresh[i] = np.stack(above_thresh[i])
