@@ -226,6 +226,7 @@ def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=3
     under_thresh = defaultdict(list)
     above_thresh = defaultdict(list)
     for i in range(embs.shape[0]):
+        print(cluster_norms[cluster_ids[i]])
         if cluster_norms[cluster_ids[i]] > threshold:
             above_thresh[labels[i]].append(embs_tsne[i,:])
         else:
