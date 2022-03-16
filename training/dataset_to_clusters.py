@@ -221,8 +221,8 @@ def tsne_fit_transform(embs, perp, tmp_save_dir = None):
     return embs_tsne
 
 
-def plot_outliers(embs, labels, cluster_ids, cluster_norms, perp=30, threshold=.25):
-    embs_tsne = tsne_fit_transform(embs, perp)
+def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=30, threshold=.25):
+    embs_tsne = tsne_fit_transform(embs, perp, tmp_save_dir)
     under_thresh = defaultdict(list)
     above_thresh = defaultdict(list)
     for i in range(embs.shape[0]):
