@@ -1,7 +1,7 @@
 """
 Examples
 
-CUDA_VISIBLE_DEVICES=2 python dataset_to_clusters.py --dataset A1 --s2only
+CUDA_VISIBLE_DEVICES=2 python dataset_to_clusters.py --dataset CF --s1only
 
 """
 import click
@@ -21,6 +21,8 @@ import pickle
 import numpy as np
 
 from tqdm import tqdm
+
+import matplotlib.pyplot as plt
 
 # loading and saving utils for abstract file loading
 def _pksave(obj, fname):
@@ -219,6 +221,28 @@ def tsne_fit_transform(embs, perp, tmp_save_dir = None):
     return embs_tsne
 
 
+def plot_outliers(embs, labels, cluster_ids, cluster_norms, perp=30, threshold=.25):
+    embs_tsne = tsne_fit_transform(embs, perp)
+    under_thresh = defaultdict(list)
+    above_thresh = defaultdict(list)
+    for i in range(embs.shape[0]):
+        if cluster_norms[cluster_ids[i]] > threshold:
+            above_thresh[labels[i]].append(embs_tsne[i,:])
+        else:
+            under_thresh[labels[i]].append(embs_tsne[i,:])
+    # entailment:0, contradict:1, neutral:2
+
+    fig = plt.figure()
+    colors = ['blue', 'orange', 'black']
+    for i in range(3):
+        fig.scatter(np.stack(above_thresh[i])[:,0], np.stack(above_thresh)[:,1],
+        c = colors[i], marker="x")
+        fig.scatter(np.stack(under_thresh[i])[:,0], np.stack(above_thresh)[:,1],
+        c = colors[i], marker="x", s=1)
+    return fig
+
+
+
 @click.command()
 @click.option('--n_gpus', default=1, help='number of gpus')
 @click.option('--dataset', help="S, M, A1, A2, A3, OC, SICK, etc")
@@ -254,7 +278,7 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_cl
     intermed_comp_dir = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
         n_clusters, lastdense, (biased, extreme_bias, s2only or s1only))
 
-    nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor, s2only)
+    nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor, s2only, s1only)
     nli_data.prepare_data(test_only = True)
 
     # collect lists of numpy arrays
@@ -281,6 +305,9 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_cl
         for line in lines:
             print(line)
             f.write(line + "\n")
+    fig = plot_outliers(embs_pca, labs, embs_cll, cluster_dists)
+    fig.savefig("test.png")
+
 
 if __name__ == "__main__":
     main()
