@@ -235,9 +235,9 @@ def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=3
     fig, ax = plt.subplots()
     colors = ['blue', 'orange', 'black']
     for i in range(3):
-        ax.scatter(np.stack(above_thresh[i])[:,0], np.stack(above_thresh)[:,1],
+        ax.scatter(np.stack(above_thresh[i])[:,0], np.stack(above_thresh[i])[:,1],
         c = colors[i], marker="x")
-        ax.scatter(np.stack(under_thresh[i])[:,0], np.stack(above_thresh)[:,1],
+        ax.scatter(np.stack(under_thresh[i])[:,0], np.stack(above_thresh[i])[:,1],
         c = colors[i], marker="x", s=1)
     return fig
 
