@@ -221,7 +221,7 @@ def tsne_fit_transform(embs, perp, tmp_save_dir = None):
     return embs_tsne
 
 
-def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=30, threshold=.25):
+def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=30, threshold=2.5):
     embs_tsne = tsne_fit_transform(embs, perp, tmp_save_dir)
     under_thresh = defaultdict(list)
     above_thresh = defaultdict(list)
@@ -237,7 +237,7 @@ def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=3
     for i in range(3):
         ax.scatter(np.stack(above_thresh[i])[:,0], np.stack(above_thresh[i])[:,1],
         c = colors[i], marker="x")
-        ax.scatter(np.stack(under_thresh[i])[:,0], np.stack(above_thresh[i])[:,1],
+        ax.scatter(np.stack(under_thresh[i])[:,0], np.stack(under_thresh[i])[:,1],
         c = colors[i], marker="x", s=1)
     return fig
 
