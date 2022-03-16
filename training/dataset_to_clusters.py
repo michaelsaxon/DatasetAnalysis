@@ -226,7 +226,6 @@ def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=3
     under_thresh = defaultdict(list)
     above_thresh = defaultdict(list)
     for i in range(embs.shape[0]):
-        print(cluster_norms[cluster_ids[i]])
         if cluster_norms[cluster_ids[i]] > threshold:
             above_thresh[labels[i]].append(embs_tsne[i,:])
         else:
@@ -236,15 +235,14 @@ def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=3
     fig, ax = plt.subplots()
     colors = ['blue', 'orange', 'black']
     for i in range(3):
-        print(i)
         above_thresh[i] = np.stack(above_thresh[i])
         under_thresh[i] = np.stack(under_thresh[i])
         print(above_thresh[i].shape)
         print(under_thresh[i].shape)
         ax.scatter(above_thresh[i][:,0], above_thresh[i][:,1],
-        c = colors[i], marker="x")
+        c = colors[i], marker="x", alpha=0.4)
         ax.scatter(under_thresh[i][:,0], under_thresh[i][:,1],
-        c = colors[i], marker="x", s=1)
+        c = colors[i], marker="x", s=1, alpha=0.4)
     return fig
 
 
