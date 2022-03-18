@@ -62,6 +62,7 @@ def get_numpy_preds_imp_maps(nli_data, ltmodel, pad_right):
             for i in range(new_imp_maps.shape[0]):
                 new_imp_maps[i,-lengths[i]:] += batch_impmaps[i,:lengths[i]]
                 batch_impmaps = new_imp_maps
+        print(batch_impmaps)
         imp_maps_list.append(batch_impmaps)
         batch_decisions = torch.max(b_posts, -1).indices
         batch_decisions = batch_decisions.cpu().detach().numpy()
