@@ -13,7 +13,7 @@ def collect_posteriors(nli_dataset, ltmodel):
         batch_posts = ltmodel(input_ids = batch['input_ids'], attention_mask=batch['attention_mask'])
         yield batch_posts.logits, batch["labels"]
 
-def collect_importance_maps_and_posteriors(nli_dataset, ltmodel):
+def collect_importance_maps_and_posteriors(nli_dataset, ltmodel, pad_right = False):
     for batch in tqdm(nli_dataset.test_dataloader()):
         cuda_dict(batch)
         batch_posts = ltmodel(input_ids = batch['input_ids'], attention_mask=batch['attention_mask'], 
@@ -23,6 +23,13 @@ def collect_importance_maps_and_posteriors(nli_dataset, ltmodel):
             grad_outputs = torch.ones_like(batch_posts.logits))[0][:,1:]
         importance_map = torch.norm(local_grad, dim=2)
         local_importance_maps = importance_map / torch.sum(importance_map, dim=-1).unsqueeze(1)
+        if not pad_right:
+            # we need to move the padding elems to the other side if we're doing left side padding
+            lengths = batch['attention_mask'].sum(-1)
+            new_imp_maps = torch.zeros_like(local_importance_maps)
+            for i in range(new_imp_maps.shape[0]):
+                new_imp_maps[i,-lengths[i]:] = local_importance_maps[i,:lengths[i]]
+                local_importance_maps = new_imp_maps
         yield local_importance_maps, batch_posts.logits, batch["labels"]
 
 
