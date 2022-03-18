@@ -13,7 +13,7 @@ def collect_posteriors(nli_dataset, ltmodel):
         batch_posts = ltmodel(input_ids = batch['input_ids'], attention_mask=batch['attention_mask'])
         yield batch_posts.logits, batch["labels"]
 
-def collect_importance_maps_and_posteriors(nli_dataset, ltmodel, pad_right = False):
+def collect_importance_maps_and_posteriors(nli_dataset, ltmodel):
     for batch in tqdm(nli_dataset.test_dataloader()):
         cuda_dict(batch)
         batch_posts = ltmodel(input_ids = batch['input_ids'], attention_mask=batch['attention_mask'], 
@@ -23,14 +23,7 @@ def collect_importance_maps_and_posteriors(nli_dataset, ltmodel, pad_right = Fal
             grad_outputs = torch.ones_like(batch_posts.logits))[0][:,1:]
         importance_map = torch.norm(local_grad, dim=2)
         local_importance_maps = importance_map / torch.sum(importance_map, dim=-1).unsqueeze(1)
-        if not pad_right:
-            # we need to move the padding elems to the other side if we're doing left side padding
-            lengths = batch['attention_mask'].sum(-1)
-            new_imp_maps = torch.zeros_like(local_importance_maps)
-            for i in range(new_imp_maps.shape[0]):
-                new_imp_maps[i,-lengths[i]:] += local_importance_maps[i,:lengths[i]]
-                local_importance_maps = new_imp_maps
-        yield local_importance_maps, batch_posts.logits, batch["labels"]
+        yield local_importance_maps, batch_posts.logits, batch["labels"], batch["attention_mask"]
 
 
 def get_numpy_preds(nli_data, ltmodel):
@@ -59,8 +52,16 @@ def get_numpy_preds_imp_maps(nli_data, ltmodel, pad_right):
     imp_maps_list = []
     decisions_list = []
     labels_list = []
-    for b_impmaps, b_posts, b_labs in collect_importance_maps_and_posteriors(nli_data, ltmodel):
+    for b_impmaps, b_posts, b_labs, b_attmaps in collect_importance_maps_and_posteriors(nli_data, ltmodel):
         batch_impmaps = b_impmaps.cpu().detach().numpy()
+        b_attmaps = b_attmaps.cpu().detach().numpy()
+        if not pad_right:
+            # we need to move the padding elems to the other side if we're doing left side padding
+            lengths = batch['attention_mask'].sum(-1)
+            new_imp_maps = np.zeros_like(batch_impmaps)
+            for i in range(new_imp_maps.shape[0]):
+                new_imp_maps[i,-lengths[i]:] += batch_impmaps[i,:lengths[i]]
+                batch_impmaps = new_imp_maps
         imp_maps_list.append(batch_impmaps)
         batch_decisions = torch.max(b_posts, -1).indices
         batch_decisions = batch_decisions.cpu().detach().numpy()
