@@ -57,7 +57,7 @@ def get_numpy_preds_imp_maps(nli_data, ltmodel, pad_right):
         b_attmaps = b_attmaps.cpu().detach().numpy()
         if not pad_right:
             # we need to move the padding elems to the other side if we're doing left side padding
-            lengths = batch['attention_mask'].sum(-1)
+            lengths = b_attmaps.sum(-1)
             new_imp_maps = np.zeros_like(batch_impmaps)
             for i in range(new_imp_maps.shape[0]):
                 new_imp_maps[i,-lengths[i]:] += batch_impmaps[i,:lengths[i]]
