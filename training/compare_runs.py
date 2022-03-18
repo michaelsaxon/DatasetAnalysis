@@ -28,7 +28,7 @@ def collect_importance_maps_and_posteriors(nli_dataset, ltmodel, pad_right = Fal
             lengths = batch['attention_mask'].sum(-1)
             new_imp_maps = torch.zeros_like(local_importance_maps)
             for i in range(new_imp_maps.shape[0]):
-                new_imp_maps[i,-lengths[i]:] = local_importance_maps[i,:lengths[i]].clone()
+                new_imp_maps[i,-lengths[i]:] += local_importance_maps[i,:lengths[i]]
                 local_importance_maps = new_imp_maps
         yield local_importance_maps, batch_posts.logits, batch["labels"]
 
