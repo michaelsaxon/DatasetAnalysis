@@ -280,7 +280,7 @@ def cosine_sim2(mat_1, mat_2, zero_triangle = False):
 
 
 def count_nonzero(matrix):
-    nonzero_mask = 1 * np.logical_not(np.(matrix, 0))
+    nonzero_mask = 1 * np.logical_not(np.equal(matrix, 0))
     return nonzero_mask.sum()
 
 
