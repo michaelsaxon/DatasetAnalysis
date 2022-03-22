@@ -47,7 +47,7 @@ def gen_cache_fit(fname, data, genfn, skip = False, loadfn = _pkload, savefn = _
             savefn(obj, fname)
     return obj
 
-def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, n_clusters, lastdense, biastype = (False, False, False)):
+def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, n_clusters, lastdense, biastype = (False, False, False), append=""):
     base = lazymkdir(intermed_comp_dir_base)
     biased, extremebias, s2only = biastype
     if s2only:
@@ -59,7 +59,7 @@ def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, n_clusters, lastden
     else:
         biastype = "normal"
     # for now I've only implemented test set
-    foldername = str(PurePath(base + f"/{'ld-'*lastdense}{dataset}-test-{biastype}-n{n_clusters}/.")) + "/."
+    foldername = str(PurePath(base + f"/{'ld-'*lastdense}{dataset}-test-{biastype}-n{n_clusters}{append}/.")) + "/."
     lazymkdir(foldername)
     return str(foldername)
 
