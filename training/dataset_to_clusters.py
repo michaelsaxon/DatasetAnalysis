@@ -279,8 +279,8 @@ def cosine_sim2(mat_1, mat_2, zero_triangle = False):
     return num
 
 
-def count_nonzero(matrix):
-    nonzero_mask = 1 * np.logical_not(np.equal(matrix, 0))
+def count_above(matrix, x = 0):
+    nonzero_mask = 1 * np.greater(matrix, x)
     return nonzero_mask.sum()
 
 
@@ -299,18 +299,17 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2):
         sum_cosine_sims = 0
         i = 0
         print(np.min(cosine_sims))
-        assert False
-        while count_nonzero(cosine_sims) > 0:
+        while count_above(cosine_sims, -1) > 0:
             print(i)
-            print(count_nonzero(cosine_sims))
+            print(count_above(cosine_sims, -1))
             # find the max elem
             max_idx = np.unravel_index(np.argmax(cosine_sims), cosine_sims.shape)
             # add the maximum element to the sum
             sum_cosine_sims += cosine_sims[max_idx]
             print(cosine_sims[max_idx])
             # we have now selected a pairing for clusters max_idx[0], max_idx[1]. Zero all others for them
-            cosine_sims[max_idx[0], :] = 0
-            cosine_sims[:, max_idx[1]] = 0
+            cosine_sims[max_idx[0], :] = -1
+            cosine_sims[:, max_idx[1]] = -1
             i += 1
         return sum_cosine_sims / cluster_vectors_2.shape[0]
 
