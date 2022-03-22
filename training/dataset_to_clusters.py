@@ -300,6 +300,7 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2):
         while count_nonzero(cosine_sims) > 0:
             # find the max elem
             max_idx = np.argmax(cosine_sims)
+            print(max_idx)
             # add the maximum element to the sum
             sum_cosine_sims += cosine_sims[max_idx]
             # we have now selected a pairing for clusters max_idx[0], max_idx[1]. Zero all others for them
