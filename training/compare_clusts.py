@@ -47,7 +47,7 @@ def single_dataset_experiment(dataset, batch_size, s1only, n_clusters, lastdense
     intermed_comp_dir_1 = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
         n_clusters, lastdense, (False, False, False or s1only))
 
-    embs_1, labs_1, clls_1, vects_1 = get_numpy_embs_clls(nli_data_1, ltmodel, n_clusters, intermed_comp_dir_1)
+    embs_1, labs_1, clls_1 = get_numpy_embs_clls(nli_data_1, ltmodel, n_clusters, intermed_comp_dir_1)
     vects_1 = get_cluster_vectors(embs_1, clls_1)
 
     print("getting ds 2 on model 1...")
@@ -56,7 +56,7 @@ def single_dataset_experiment(dataset, batch_size, s1only, n_clusters, lastdense
         n_clusters, lastdense, (True, False, True or s1only))
 
     intermed_comp_dir_3 = str(PurePath(intermed_comp_dir_3 + "-on_normal/."))
-    embs_2 = get_numpy_embs(nli_data_2, ltmodel, tmp_save_dir=intermed_comp_dir_3, lastdense = lastdense)
+    embs_2, _ = get_numpy_embs(nli_data_2, ltmodel, tmp_save_dir=intermed_comp_dir_3, lastdense = lastdense)
 
     ltmodel.load_state_dict(ckpt_2["state_dict"])
     model.cuda()
@@ -67,7 +67,7 @@ def single_dataset_experiment(dataset, batch_size, s1only, n_clusters, lastdense
     intermed_comp_dir_2 = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
         n_clusters, lastdense, (True, False, True or s1only))
 
-    _, labs_2, clls_2, vects_2 = get_numpy_embs_clls(nli_data_2, ltmodel, n_clusters, intermed_comp_dir_2)
+    _, labs_2, clls_2 = get_numpy_embs_clls(nli_data_2, ltmodel, n_clusters, intermed_comp_dir_2)
 
     vects_2 = get_cluster_vectors(embs_2, clls_2)
 
