@@ -297,15 +297,19 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2):
         cosine_sims = cosine_sim2(cluster_vectors_1, cluster_vectors_2)
         # I think this is the most efficient/principled way to get the best pairwise nums
         sum_cosine_sims = 0
+        i = 0
         while count_nonzero(cosine_sims) > 0:
+            print(i)
             print(count_nonzero(cosine_sims))
             # find the max elem
             max_idx = np.unravel_index(np.argmax(cosine_sims), cosine_sims.shape)
             # add the maximum element to the sum
             sum_cosine_sims += cosine_sims[max_idx]
+            print(cosine_sims[max_idx])
             # we have now selected a pairing for clusters max_idx[0], max_idx[1]. Zero all others for them
             cosine_sims[max_idx[0], :] = 0
             cosine_sims[:, max_idx[1]] = 0
+            i += 1
         return sum_cosine_sims / cluster_vectors_2.shape[0]
 
 
