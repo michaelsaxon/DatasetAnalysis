@@ -8,7 +8,7 @@ from compare_runs import *
 from manage_settings import get_write_settings, read_models_csv, lazymkdir
 from tqdm import tqdm
 
-def get_numpy_embs_clls_vects(nli_data, ltmodel, intermed_comp_dir = "", lastdense = False):
+def get_numpy_embs_clls_vects(nli_data, ltmodel, n_clusters, intermed_comp_dir = "", lastdense = False):
     # collect lists of numpy arrays
     embs, labs = get_numpy_embs(nli_data, ltmodel, tmp_save_dir=intermed_comp_dir, lastdense = lastdense)
     # pca transformed embeddings
@@ -55,7 +55,7 @@ def main(n_gpus, dataset, batch_size, s1only, n_clusters, lastdense):
     intermed_comp_dir_1 = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
         n_clusters, lastdense, (False, False, False or s1only))
 
-    embs_1, labs_1, clls_1, vects_1 = get_numpy_embs_clls_vects(nli_data_1, ltmodel, intermed_comp_dir_1)
+    embs_1, labs_1, clls_1, vects_1 = get_numpy_embs_clls_vects(nli_data_1, ltmodel, n_clusters, intermed_comp_dir_1)
 
     ltmodel.load_state_dict(ckpt_2["state_dict"])
     model.cuda()
@@ -66,7 +66,7 @@ def main(n_gpus, dataset, batch_size, s1only, n_clusters, lastdense):
     intermed_comp_dir_2 = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
         n_clusters, lastdense, (True, False, True or s1only))
 
-    embs_2, labs_2, clls_2, vects_2 = get_numpy_embs_clls_vects(nli_data_2, ltmodel, intermed_comp_dir_2)
+    embs_2, labs_2, clls_2, vects_2 = get_numpy_embs_clls_vects(nli_data_2, ltmodel, n_clusters, intermed_comp_dir_2)
 
     print(greedy_cluster_meanings_comparison(vects_1, vects_2))
 
