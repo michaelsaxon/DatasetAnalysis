@@ -280,7 +280,7 @@ def cosine_sim2(mat_1, mat_2, zero_triangle = False):
 
 
 def count_nonzero(matrix):
-    nonzero_mask = 1 * np.logical_not(np.equal(matrix, 0))
+    nonzero_mask = 1 * np.logical_not(np.(matrix, 0))
     return nonzero_mask.sum()
 
 
@@ -298,6 +298,8 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2):
         # I think this is the most efficient/principled way to get the best pairwise nums
         sum_cosine_sims = 0
         i = 0
+        print(np.min(cosine_sims))
+        assert False
         while count_nonzero(cosine_sims) > 0:
             print(i)
             print(count_nonzero(cosine_sims))
