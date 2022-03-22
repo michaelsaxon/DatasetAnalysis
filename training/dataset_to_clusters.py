@@ -261,7 +261,7 @@ def get_cluster_vectors(embs, cluster_ids):
     # recombine
     cluster_avgs = []
     for cluster_id in sorted(cluster_lists.keys()):
-        cluster_avgs.append(np.stack(cluster_lists[cluster_id]).mean())
+        cluster_avgs.append(np.stack(cluster_lists[cluster_id]).mean(0))
     return np.stack(cluster_avgs)
 
 
