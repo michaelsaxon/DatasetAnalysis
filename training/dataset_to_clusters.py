@@ -289,6 +289,7 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2):
     if cluster_vectors_1.shape != cluster_vectors_2.shape:
         raise NotImplementedError
     else:
+        print(cluster_vectors_1.shape)
         assert len(cluster_vectors_1.shape) == 2
         cluster_vectors_1 = cluster_vectors_1.expand_dims[0]
         cluster_vectors_2 = cluster_vectors_2.expand_dims[1]
