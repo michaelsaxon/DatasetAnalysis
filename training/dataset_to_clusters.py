@@ -302,6 +302,7 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2, thr
         i = 0
         num_gtt1 = 0
         num_gtt2 = 0
+        print(np.max(cosine_sims))
         while count_above(cosine_sims, -1) > 0:
             # find the max elem
             max_idx = np.unravel_index(np.argmax(cosine_sims), cosine_sims.shape)
