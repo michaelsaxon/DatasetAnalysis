@@ -285,10 +285,11 @@ def count_above(matrix, x = 0):
 
 
 # compute the average of the max pairwise similarities between two clusterings
-def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2):
+def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2, thresh1 = .8, thresh2 = 0):
     if cluster_vectors_1.shape != cluster_vectors_2.shape:
         raise NotImplementedError
     else:
+        num_values = cluster_vectors_2.shape[0]
         print(cluster_vectors_1.shape)
         assert len(cluster_vectors_1.shape) == 2
         cluster_vectors_1 = np.expand_dims(cluster_vectors_1, 0)
@@ -298,20 +299,23 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2):
         # I think this is the most efficient/principled way to get the best pairwise nums
         sum_cosine_sims = 0
         i = 0
-        print(np.min(cosine_sims))
+        num_gtt1 = 0
+        num_gtt2 = 0
         while count_above(cosine_sims, -1) > 0:
-            print(i)
-            print(count_above(cosine_sims, -1))
             # find the max elem
             max_idx = np.unravel_index(np.argmax(cosine_sims), cosine_sims.shape)
             # add the maximum element to the sum
-            sum_cosine_sims += cosine_sims[max_idx]
-            print(cosine_sims[max_idx])
+            this_best_sim = cosine_sims[max_idx]
+            sum_cosine_sims += this_best_sim
+            if this_best_sim > thresh1:
+                num_gtt1 += 1
+            if this_best_sim > thresh2:
+                num_gtt2 += 1
             # we have now selected a pairing for clusters max_idx[0], max_idx[1]. Zero all others for them
             cosine_sims[max_idx[0], :] = -1
             cosine_sims[:, max_idx[1]] = -1
             i += 1
-        return sum_cosine_sims / cluster_vectors_2.shape[0]
+        return sum_cosine_sims / num_values, num_gtt1 / num_values, num_gtt2 / num_values
 
 
 @click.command()
