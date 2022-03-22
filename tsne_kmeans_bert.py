@@ -415,7 +415,7 @@ def main(basepath, model, outpath, dataset, partition, debug, hides2, perp, cuda
                 np.save(f"{outpath}_{dataset}_{partition}_{model}_T{perp}s.tmp", selected)
 
         #keys = list(sents.indict.keys())
-        # # # # # # # # # # # HACK # # # # # # # # # # # 
+        # # # # # # # # # # # hack # # # # # # # # # # # 
         keys = ["neutral", "contradiction", "entailment"]
         colors = {'contradiction':'orange', 'neutral':'black', 'entailment':'blue'}
 

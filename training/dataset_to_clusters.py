@@ -3,6 +3,11 @@ Examples
 
 CUDA_VISIBLE_DEVICES=0 python dataset_to_clusters.py --dataset CF --s2only
 
+CUDA_VISIBLE_DEVICES=0 python dataset_to_clusters.py --s2only --lastdense --dataset S
+CUDA_VISIBLE_DEVICES=1 python dataset_to_clusters.py --s2only --lastdense --dataset SICK
+CUDA_VISIBLE_DEVICES=2 python dataset_to_clusters.py --s2only --lastdense --dataset MU
+CUDA_VISIBLE_DEVICES=3 python dataset_to_clusters.py --s2only --lastdense --dataset MB
+
 """
 import click
 from sklearn import cluster
@@ -162,15 +167,18 @@ def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None):
 ## functions to evaluate and use the clustering; metrics, visualization, etc
 # a prereq step is to produce the clustering, from this we can get PECO, etc
 def cluster_preds_to_dists(embs_cll, labs, n_clusters):
+    global_dist = np.array([0,0,0])
     cluster_counts = [np.array([0,0,0]) for i in range(n_clusters)]
     for i in range(embs_cll.shape[0]):
         cluster_counts[embs_cll[i]][labs[i]] += 1
+        global_dist[labs[i]] += 1
     cluster_counts = np.stack(cluster_counts)
-    return cluster_counts / np.expand_dims(cluster_counts.sum(-1),1)
+    global_dist = global_dist / global_dist.sum()
+    return cluster_counts / np.expand_dims(cluster_counts.sum(-1),1), global_dist
 
 # discrete clusterwise cross entropy between local dist and balanced dist
 def cluster_xH(cluster_dists, balance = np.array([.333334,.333333,.333333]), eps = 1e-30):
-    x = np.log2(cluster_dists + eps)
+    x = np.log2(cluster_dists + eps) - np.log2(balance + eps)
     x = x * balance
     return - x.sum(-1)
 
@@ -246,6 +254,58 @@ def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=3
     return fig
 
 
+def get_cluster_vectors(embs, cluster_ids):
+    cluster_lists = defaultdict(list)
+    for i in range(embs.shape[0]):
+        cluster_lists[int(cluster_ids[i])].append(embs[i,:])
+    # recombine
+    cluster_avgs = []
+    for cluster_id in sorted(cluster_lists.keys()):
+        cluster_avgs.append(np.stack(cluster_lists[cluster_id]).mean())
+    return np.stack(cluster_avgs)
+
+
+def cosine_sim2(mat_1, mat_2, zero_triangle = False):
+    num = mat_1 * mat_2
+    denom_1 = mat_1 * mat_1
+    denom_2 = mat_2 * mat_2
+    num =  num.sum(-1) / (np.sqrt(denom_1.sum(-1)) * np.sqrt(denom_2.sum(-1)))
+    # Only use zero_triangle if we're comparing a set of vectors to itself
+    if zero_triangle:
+        mask1 = np.expand_dims(np.arange(num.shape[0]), 0)
+        mask2 = np.expand_dims(np.arange(num.shape[0]), 1)
+        mask = np.greater(mask1, mask2)
+        num = num * mask
+    return num
+
+
+def count_nonzero(matrix):
+    nonzero_mask = 1 * np.logical_not(np.equal(matrix, 0))
+    return nonzero_mask.sum()
+
+
+# compute the average of the max pairwise similarities between two clusterings
+def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2):
+    if cluster_vectors_1.shape != cluster_vectors_2.shape:
+        raise NotImplementedError
+    else:
+        assert len(cluster_vectors_1.shape) == 2
+        cluster_vectors_1 = cluster_vectors_1.expand_dims[0]
+        cluster_vectors_2 = cluster_vectors_2.expand_dims[1]
+        # this is how we get the full pairwise cosine similarity between each vector
+        cosine_sims = cosine_sim2(cluster_vectors_1, cluster_vectors_2)
+        # I think this is the most efficient/principled way to get the best pairwise nums
+        sum_cosine_sims = 0
+        while count_nonzero(cosine_sims) > 0:
+            # find the max elem
+            max_idx = np.argmax(cosine_sims)
+            # add the maximum element to the sum
+            sum_cosine_sims += cosine_sims[max_idx]
+            # we have now selected a pairing for clusters max_idx[0], max_idx[1]. Zero all others for them
+            cosine_sims[max_idx[0], :] = 0
+            cosine_sims[:, max_idx[1]] = 0
+        return sum_cosine_sims / cluster_vectors_2.shape[0]
+
 
 @click.command()
 @click.option('--n_gpus', default=1, help='number of gpus')
@@ -258,7 +318,8 @@ def plot_outliers(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=3
 @click.option('--lastdense', is_flag=True)
 @click.option('--n_clusters', default=50)
 @click.option('--tsne_thresh', default=2.5)
-def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense, tsne_thresh):
+@click.option('--tsne', is_flag=True)
+def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense, tsne_thresh, tsne):
     model_id, pretrained_path = read_models_csv(dataset)
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
@@ -292,11 +353,12 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_cl
     embs_pca = pca_fit_transform(embs, tmp_save_dir=intermed_comp_dir)
     # cluster-labeled embeddings
     embs_cll = kmeans_fit_transform(embs_pca, n_clusters = n_clusters)
+    vectors = get_cluster_vectors(embs, embs_cll)
     ## evaluate the PECO measure
     # get the cluster cross entropies
-    cluster_dists = cluster_preds_to_dists(embs_cll, labs, n_clusters = n_clusters)
-    clusters_xHs = cluster_xH(cluster_dists)
-    clusters_L2 = cluster_L2(cluster_dists)
+    cluster_dists, global_dist = cluster_preds_to_dists(embs_cll, labs, n_clusters = n_clusters)
+    clusters_xHs = cluster_xH(cluster_dists, global_dist)
+    clusters_L2 = cluster_L2(cluster_dists, global_dist)
     peco_xH = peco_score(clusters_xHs, scale = 5)
     peco_L2 = peco_score(clusters_L2)
     threshscore_xH_25 = threshold_score(clusters_xHs, .25 * 10)
@@ -310,8 +372,9 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_cl
         for line in lines:
             print(line)
             f.write(line + "\n")
-    fig = plot_outliers(embs_pca, labs, embs_cll, clusters_xHs, tmp_save_dir=intermed_comp_dir, threshold=tsne_thresh)
-    fig.savefig("test.png")
+    if tsne:
+        fig = plot_outliers(embs_pca, labs, embs_cll, clusters_xHs, tmp_save_dir=intermed_comp_dir, threshold=tsne_thresh)
+        fig.savefig("test.png")
 
 
 if __name__ == "__main__":

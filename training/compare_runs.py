@@ -1,5 +1,5 @@
 """
-CUDA_VISIBLE_DEVICES=4 python compare_runs.py --dataset S
+CUDA_VISIBLE_DEVICES=3 python compare_runs.py --dataset S
 """
 
 from train_classifier import *
