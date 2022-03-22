@@ -276,7 +276,7 @@ def cosine_sim2(mat_1, mat_2, zero_triangle = False):
         mask2 = np.expand_dims(np.arange(num.shape[0]), 1)
         mask = np.greater(mask1, mask2)
         num = num * mask
-    return num
+    return np.maximum(np.minimum(num, 1.0), -1.0)
 
 
 def count_above(matrix, x = 0):
