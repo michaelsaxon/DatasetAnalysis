@@ -55,7 +55,7 @@ def single_dataset_experiment(dataset, batch_size, s1only, n_clusters, lastdense
     intermed_comp_dir_3 = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
         n_clusters, lastdense, (True, False, True or s1only))
 
-    intermed_comp_dir_3 = str(PurePath(intermed_comp_dir_3 + "-on_normal/."))
+    intermed_comp_dir_3 = str(PurePath(intermed_comp_dir_3[:-2] + "-on_normal/."))
     embs_2, _ = get_numpy_embs(nli_data_2, ltmodel, tmp_save_dir=intermed_comp_dir_3, lastdense = lastdense)
 
     ltmodel.load_state_dict(ckpt_2["state_dict"])
