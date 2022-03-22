@@ -299,7 +299,7 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2):
         sum_cosine_sims = 0
         while count_nonzero(cosine_sims) > 0:
             # find the max elem
-            max_idx = np.argmax(cosine_sims)
+            max_idx = np.unravel_index(np.argmax(cosine_sims), cosine_sims.shape)
             print(max_idx)
             # add the maximum element to the sum
             sum_cosine_sims += cosine_sims[max_idx]
