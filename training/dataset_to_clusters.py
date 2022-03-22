@@ -296,6 +296,7 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2, thr
         cluster_vectors_2 = np.expand_dims(cluster_vectors_2, 1)
         # this is how we get the full pairwise cosine similarity between each vector
         cosine_sims = cosine_sim2(cluster_vectors_1, cluster_vectors_2)
+        print(cosine_sims.shape)
         # I think this is the most efficient/principled way to get the best pairwise nums
         sum_cosine_sims = 0
         i = 0
