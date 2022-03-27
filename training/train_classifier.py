@@ -1,6 +1,5 @@
 '''
-CUDA_VISIBLE_DEVICES=1 python train_classifier.py --n_gpus 1 \
-     --dataset S --batch_size 64 --biased
+CUDA_VISIBLE_DEVICES=1 python train_classifier.py --dataset S --batch_size 64 --biased
 
 SEE RECIPES.txt
 '''
@@ -49,7 +48,8 @@ VALID_DATASETS = {
     "X" : ("xnli", None, ["sentence1", "sentence2"], False),
     "MU" : ("mnli_u", None, ["sentence1", "sentence2"], True),
     "MB" : ("mnli_b", None, ["sentence1", "sentence2"], True),
-    "SdbA" : ("debiased_snli_aug", None, ["premise", "hypothesis"], True)
+    "SdbA" : ("debiased_snli_aug", None, ["premise", "hypothesis"], True),
+    "MdbA" : ("debiased_mnli_aug", None, ["premise", "hypothesis"], True)
 }
 
 FULL_LABEL_MAP = {
@@ -176,6 +176,7 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
         'mnli_u' : f'multinli_1.0/unmatched/{partition}.jsonl',
         'mnli_b' : f'multinli_1.0/matched/{partition}.jsonl',
         'debiased_snli_aug' : f'debiased_wu/snli_z-aug_{partition}.jsonl',
+        'debiased_mnli_aug' : f'debiased_wu/mnli_z-aug_{partition}.jsonl',
     }
 
     if dataset == "AA":
@@ -200,7 +201,7 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
             label = line["label"].lower()
         elif dataset == "F":
             label = FEVER_LABEL_MAP[line["label"]]
-        elif dataset == "SdbA":
+        elif dataset == "SdbA" or dataset == "MdbA":
             label = WU_LABEL_MAP[int(line["label"])]
         else:
             label = FULL_LABEL_MAP[line["label"]]

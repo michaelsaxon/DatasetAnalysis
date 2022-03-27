@@ -9,7 +9,7 @@ import json
 
 @click.command()
 @click.option('--fname')
-@click.option('--val_split', default = .2)
+@click.option('--val_split', default = .05)
 @click.option('--basedir', default = "/local/home/saxon/data/debiased_wu/")
 def main(fname, val_split, basedir):
     fname = basedir + fname
