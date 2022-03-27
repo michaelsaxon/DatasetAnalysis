@@ -12,4 +12,10 @@ MNLI
 gold_label (full form)
 sentence_1
 
-
+wudebiased
+mnli_par-z.jsonl  
+mnli_seq-z.jsonl  
+mnli_z-aug.jsonl  
+snli_par-z.jsonl  
+snli_seq-z.jsonl  
+snli_z-aug.jsonl

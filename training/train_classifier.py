@@ -49,6 +49,7 @@ VALID_DATASETS = {
     "X" : ("xnli", None, ["sentence1", "sentence2"], False),
     "MU" : ("mnli_u", None, ["sentence1", "sentence2"], True),
     "MB" : ("mnli_b", None, ["sentence1", "sentence2"], True),
+    "SdbA" : ("debiased_snli_aug", None, ["premise", "hypothesis"], True)
 }
 
 FULL_LABEL_MAP = {
@@ -62,6 +63,8 @@ FEVER_LABEL_MAP = {
     "REFUTES" : "contradiction",
     "NOT ENOUGH INFO" : "neutral"
 }
+
+WU_LABEL_MAP = ["entailment", "neutral", "contradiction"]
 
 # THIS IS THE IDX REVERSAL DICTIONARY
 # IF THIS IS MODIFIED ALL PRIOR PROG IS LOST
@@ -172,6 +175,7 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
         'xnli': f'XNLI-1.0/xnli.{partition}.jsonl',
         'mnli_u' : f'multinli_1.0/unmatched/{partition}.jsonl',
         'mnli_b' : f'multinli_1.0/matched/{partition}.jsonl',
+        'debiased_snli_aug' : f'debiased_wu/snli_z-aug_{partition}.jsonl',
     }
 
     if dataset == "AA":
@@ -196,6 +200,8 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
             label = line["label"].lower()
         elif dataset == "F":
             label = FEVER_LABEL_MAP[line["label"]]
+        elif dataset == "SdbA":
+            label = WU_LABEL_MAP[int(line["label"])]
         else:
             label = FULL_LABEL_MAP[line["label"]]
         s1 = line[sentencemap[0]]
