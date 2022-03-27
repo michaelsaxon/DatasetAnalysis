@@ -28,7 +28,7 @@ def main(fname, val_split, basedir):
     val_hyps = {}
     val_prems = {}
     random.shuffle(lines)
-    target_val_length = len(lines) * dev_split
+    target_val_length = len(lines) * val_split
     for i, line in enumerate(lines):
         _line = json.loads(line)
         if len(val_lines) < target_val_length:
