@@ -184,7 +184,14 @@ CUDA_VISIBLE_DEVICES=5 python train_classifier.py --n_gpus 1 \
 
 # WU DEBIASED
 
-CUDA_VISIBLE_DEVICES=1 python train_classifier.py --dataset SdbA --batch_size 64
-CUDA_VISIBLE_DEVICES=1 python train_classifier.py --dataset SdbA --batch_size 128 --s2only
-CUDA_VISIBLE_DEVICES=1 python train_classifier.py --dataset MdbA --batch_size 64
-CUDA_VISIBLE_DEVICES=1 python train_classifier.py --dataset MdbA --batch_size 128 --s2only
+CUDA_VISIBLE_DEVICES=0 python train_classifier.py --dataset SdbA --batch_size 64
+CUDA_VISIBLE_DEVICES=0 python train_classifier.py --dataset SdbA --batch_size 96 --s2only
+CUDA_VISIBLE_DEVICES=2 python train_classifier.py --dataset MdbA --batch_size 16
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --dataset MdbA --batch_size 16 --s2only
+CUDA_VISIBLE_DEVICES=6 python train_classifier.py --dataset MdbA --batch_size 16 --s1only
+CUDA_VISIBLE_DEVICES=3 python train_classifier.py --dataset SdbA --batch_size 96 --s1only
+
+
+
+CUDA_VISIBLE_DEVICES=2 python train_classifier.py --dataset SdbA  --n_epochs 10 --lr 0.000005 --batch_size 96 --s1only
+CUDA_VISIBLE_DEVICES=6 python train_classifier.py --dataset SdbA  --n_epochs 10 --lr 0.000005 --batch_size 96 --s2only
