@@ -336,7 +336,6 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2, thr
 @click.option('--tsne', is_flag=True)
 def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense, tsne_thresh, tsne):
     model_id, pretrained_path = read_models_csv(dataset)
-    print(model_id)
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
     print("Init litmodel...")
