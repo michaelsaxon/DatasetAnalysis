@@ -2,6 +2,7 @@ import torch
 import numpy as np
 from pytorch_lightning.callbacks import Callback
 from manage_settings import get_write_settings, lazymkdir
+import os
 
 def define_samplewise_metric(key_nums_dict):
     out = {}
@@ -24,7 +25,7 @@ class CartographyCallback(Callback):
     def __init__(self, output_base):
         super().__init__()
         self.output_base = output_base
-        lazymkdir(output_base)
+        os.makedirs(output_base, exist_ok=True)
 
     def init_buffers(self, trainer):
         key_nums = {
