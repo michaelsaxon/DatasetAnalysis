@@ -58,18 +58,18 @@ class CartographyCallback(Callback):
 
     def on_train_epoch_end(self, trainer, pl_module):
         self.cartography_save(trainer.current_epoch, "train")
-        pl_module.log('train_confs', self.confidences["train"])
-        pl_module.log('train_corrs', self.correctnesses["train"])
+        pl_module.log('train_confs', torch.from_numpy(self.confidences["train"]))
+        pl_module.log('train_corrs', torch.from_numpy(self.correctnesses["train"]))
 
     def on_validation_epoch_end(self, trainer, pl_module):
         self.cartography_save(trainer.current_epoch, "val")
-        pl_module.log('val_confs', self.confidences["val"])
-        pl_module.log('val_corrs', self.correctnesses["val"])
+        pl_module.log('val_confs', torch.from_numpy(self.confidences["val"]))
+        pl_module.log('val_corrs', torch.from_numpy(self.correctnesses["val"]))
     
     def on_test_epoch_end(self, trainer, pl_module):
         self.cartography_save(trainer.current_epoch, "test")
-        pl_module.log('test_confs', self.confidences["test"])
-        pl_module.log('test_corrs', self.correctnesses["test"])
+        pl_module.log('test_confs', torch.from_numpy(self.confidences["test"]))
+        pl_module.log('test_corrs', torch.from_numpy(self.correctnesses["test"]))
 
     def on_train_start(self, trainer, pl_module):
         self.init_buffers(trainer)
