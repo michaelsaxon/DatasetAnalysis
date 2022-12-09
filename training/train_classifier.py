@@ -15,7 +15,7 @@ from transformers import RobertaTokenizer, RobertaForSequenceClassification, Ber
 from transformers import AdamW, AutoTokenizer, AutoModelForSequenceClassification
 import torch.nn.functional as F
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
 from pytorch_lightning.loggers import WandbLogger
 import wandb
 import json
@@ -481,9 +481,10 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     ckpts_path = PurePath(str(run_path) + "/ckpts")
     lazymkdir(ckpts_path)
 
-    callbacks = []
+    callbacks = [TQDMProgressBar(refresh_rate=4)]
     if collect_cartography:
         callbacks.append(CartographyCallback(
+            
             f"{ckpts_path}/{run_name}_cart"
         ))
 
@@ -492,9 +493,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
         save_last=True, save_top_k=2)
     print("Init trainer...")
 
-    trainer = pl.Trainer(gpus = n_gpus, max_epochs = n_epochs, 
-        checkpoint_callback = checkpoint, progress_bar_refresh_rate = 4,
-        logger = wandb_logger, callbacks = callbacks)
+    trainer = pl.Trainer(gpus = n_gpus, max_epochs = n_epochs, enable_checkpointing = checkpoint, logger = wandb_logger, callbacks = callbacks)
     print("Training...")
     trainer.fit(ltmodel, nli_data)
     trainer.test(ltmodel, nli_data)
