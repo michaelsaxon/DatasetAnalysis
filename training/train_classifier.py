@@ -113,14 +113,14 @@ class RobertaClassifier(pl.LightningModule):
         return {"preds" : preds, "loss" : loss, "acc" : acc, "logits" : logits}
 
     def validation_step(self, batch, batch_idx):
-        preds, loss, acc = self.forward_loss_acc(batch)
+        preds, loss, acc, logits = self.forward_loss_acc(batch)
         self.log('val_loss', loss)
         self.log('val_accuracy', acc)
         self.log('val_best_acc', acc)
         return {"preds" : preds, "loss" : loss, "acc" : acc, "logits" : logits}
 
     def test_step(self, batch, batch_idx):
-        preds, loss, acc = self.forward_loss_acc(batch)
+        preds, loss, acc, logits = self.forward_loss_acc(batch)
         self.log('test_loss', loss)
         self.log('test_accuracy', acc)
         return {"preds" : preds, "loss" : loss, "acc" : acc, "logits" : logits}
