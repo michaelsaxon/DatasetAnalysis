@@ -27,8 +27,6 @@ class CartographyCallback(Callback):
     def __init__(self, key_nums, output_base):
         super().__init__()
         self.output_base = output_base
-        self.confidences = define_samplewise_metric(key_nums)
-        self.correctnesses = define_samplewise_metric(key_nums)
         lazymkdir(output_base)
 
     def cartography_save(self, epoch, key):
@@ -69,3 +67,12 @@ class CartographyCallback(Callback):
     
     def on_test_epoch_end(self, trainer, pl_module):
         self.cartography_save(trainer.current_epoch, "test")
+
+    def on_train_start(self, trainer, pl_module):
+        key_nums = {
+            "train" : len(trainer.train), 
+            "val" : len(trainer.valid), 
+            "test" : len(trainer.test)
+        }
+        self.confidences = define_samplewise_metric(key_nums)
+        self.correctnesses = define_samplewise_metric(key_nums)

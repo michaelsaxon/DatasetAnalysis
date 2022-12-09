@@ -484,7 +484,6 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     callbacks = []
     if collect_cartography:
         callbacks.append(CartographyCallback(
-            {"train" : len(nli_data.train), "val" : len(nli_data.valid), "test" : len(nli_data.test)}, 
             f"{ckpts_path}/{run_name}_cart"
         ))
 
