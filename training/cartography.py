@@ -52,13 +52,13 @@ class CartographyCallback(Callback):
         self.confidences[key][batch_idces] = confidence_elementwise(targets, logits).squeeze()
         self.confidences[key][batch_idces] = correct_elementwise(targets, preds).squeeze()
 
-    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         self.batch_end_accumulate(batch, outputs, "train")
 
-    def on_validation_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+    def on_validation_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         self.batch_end_accumulate(batch, outputs, "val")
 
-    def on_test_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+    def on_test_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         self.batch_end_accumulate(batch, outputs, "test")
 
     def on_train_epoch_end(self, trainer, pl_module):
