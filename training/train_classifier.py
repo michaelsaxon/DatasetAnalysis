@@ -288,7 +288,6 @@ class plNLIDataModule(pl.LightningDataModule):
         self.s2only = s2only
         self.s1only = s1only
 
-    # Loads and splits the data into training, validation and test sets with a 60/20/20 split
     def prepare_data(self, test_only = False):
         print("Preparing data...")
         if self.dataset == "SICK":
@@ -298,7 +297,6 @@ class plNLIDataModule(pl.LightningDataModule):
                 self.train = load_nli_data(self.basepath, self.dataset, "train")
                 self.valid = load_nli_data(self.basepath, self.dataset, "dev")
             self.test = load_nli_data(self.basepath, self.dataset, "test")
-        #print("Preparing input vectors...")
 
     # deprecated, for now I'm doing in-time tokenization with NLIDataset
     # encode the sentences using the tokenizer  

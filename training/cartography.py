@@ -30,6 +30,7 @@ class CartographyCallback(Callback):
         lazymkdir(output_base)
 
     def init_buffers(self, trainer):
+        print(dir(trainer))
         key_nums = {
             "train" : len(trainer.train), 
             "val" : len(trainer.valid), 
