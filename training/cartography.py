@@ -30,11 +30,10 @@ class CartographyCallback(Callback):
         lazymkdir(output_base)
 
     def init_buffers(self, trainer):
-        print(dir(trainer))
         key_nums = {
-            "train" : len(trainer.train), 
-            "val" : len(trainer.valid), 
-            "test" : len(trainer.test)
+            "train" : len(trainer.datamodule.train), 
+            "val" : len(trainer.datamodule.valid), 
+            "test" : len(trainer.datamodule.test)
         }
         self.confidences = define_samplewise_metric(key_nums)
         self.correctnesses = define_samplewise_metric(key_nums)
