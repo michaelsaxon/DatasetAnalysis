@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 import numpy as np
 from pytorch_lightning.callbacks import Callback
 from manage_settings import get_write_settings, lazymkdir
@@ -13,7 +14,7 @@ def define_samplewise_metric(key_nums_dict):
 # confidence
 # C_i = 1/E \sum_epochs p_model(label | input)
 def confidence_elementwise(targets, logits):
-    return torch.gather(logits, -1, targets.unsqueeze(-1)).detach().cpu().numpy()
+    return torch.gather(F.softmax(logits, dim=-1), -1, targets.unsqueeze(-1)).detach().cpu().numpy()
 
 def correct_elementwise(targets, preds):
     return torch.eq(preds, targets).squeeze().detach().cpu().numpy()

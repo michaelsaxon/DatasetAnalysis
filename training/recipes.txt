@@ -207,4 +207,6 @@ CUDA_VISIBLE_DEVICES=3 python compare_runs.py --dataset MdbA
 
 # Dec 2022
 
-CUDA_VISIBLE_DEVICES=2 python train_classifier.py --n_gpus 1 --dataset S --batch_size 36 --n_epochs 10 --lr 0.000005 --collect_cartography
+CUDA_VISIBLE_DEVICES=5 python train_classifier.py --n_gpus 1 --dataset S --batch_size 64 --n_epochs 10 --lr 0.000005 --collect_cartography
+
+CUDA_VISIBLE_DEVICES=7 python train_classifier.py  --n_gpus 1  --dataset M --n_epochs 10 --collect_cartography --batch_size 18
