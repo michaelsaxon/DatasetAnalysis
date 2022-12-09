@@ -21,6 +21,8 @@ def correct_elementwise(targets, preds):
 # integrate a new value into it from the returned elements
 def accumulate_cartography_metric(keys, values, target_dict):
     # keys, values are ndarrays
+    print(keys)
+    print(values)
     target_dict[keys] = values.squeeze()
 
 class CartographyCallback(Callback):
