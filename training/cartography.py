@@ -50,13 +50,13 @@ class CartographyCallback(Callback):
             self.correctnesses[key]
         )
 
-    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
+    def on_train_batch_end(self, pl_module, outputs, batch, batch_idx, dataloader_idx):
         self.batch_end_accumulate(batch, outputs, "train")
 
-    def on_validation_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
+    def on_validation_batch_end(self, pl_module, outputs, batch, batch_idx, dataloader_idx):
         self.batch_end_accumulate(batch, outputs, "val")
 
-    def on_test_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
+    def on_test_batch_end(self, pl_module, outputs, batch, batch_idx, dataloader_idx):
         self.batch_end_accumulate(batch, outputs, "test")
 
     def on_train_epoch_end(self, trainer, pl_module):
