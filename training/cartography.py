@@ -12,8 +12,6 @@ def define_samplewise_metric(key_nums_dict):
 # confidence
 # C_i = 1/E \sum_epochs p_model(label | input)
 def confidence_elementwise(targets, logits):
-    print(logits.shape)
-    print(targets.shape )
     return torch.gather(logits, -1, targets.unsqueeze(-1)).detach().cpu().numpy()
 
 def correct_elementwise(targets, preds):
@@ -30,6 +28,15 @@ class CartographyCallback(Callback):
         super().__init__()
         self.output_base = output_base
         lazymkdir(output_base)
+
+    def init_buffers(self, trainer):
+        key_nums = {
+            "train" : len(trainer.train), 
+            "val" : len(trainer.valid), 
+            "test" : len(trainer.test)
+        }
+        self.confidences = define_samplewise_metric(key_nums)
+        self.correctnesses = define_samplewise_metric(key_nums)
 
     def cartography_save(self, epoch, key):
         fname = f"{self.output_base}/$$$_{key}_{epoch}.npy"
@@ -71,10 +78,7 @@ class CartographyCallback(Callback):
         self.cartography_save(trainer.current_epoch, "test")
 
     def on_train_start(self, trainer, pl_module):
-        key_nums = {
-            "train" : len(trainer.train), 
-            "val" : len(trainer.valid), 
-            "test" : len(trainer.test)
-        }
-        self.confidences = define_samplewise_metric(key_nums)
-        self.correctnesses = define_samplewise_metric(key_nums)
+        self.init_buffers(trainer)
+    
+    def on_sanity_check_start(self, trainer, pl_module):
+        self.init_buffers(trainer)
