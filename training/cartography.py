@@ -34,15 +34,10 @@ class CartographyCallback(Callback):
         }
         self.confidences = define_samplewise_metric(key_nums)
         self.correctnesses = define_samplewise_metric(key_nums)
-    
-    def accumulate_buffer(self, batch_idces, values, target_dict):
-        # keys, values are ndarrays
-        self.confidences[key][batch_idces] = values.squeeze()
 
     def cartography_save(self, epoch, key):
-        fname = f"{self.output_base}/$$$_{key}_{epoch}.npy"
-        np.save(fname.replace("$$$", "conf"), self.confidences[key])
-        np.save(fname.replace("$$$", "corr"), self.correctnesses[key])
+        np.save(f"{self.output_base}/conf_{key}_{epoch}.npy", self.confidences[key])
+        np.save(f"{self.output_base}/corr_{key}_{epoch}.npy", self.correctnesses[key])
 
     def batch_end_accumulate(self, batch, outputs, key):
         targets = batch['labels'].squeeze()
@@ -50,7 +45,7 @@ class CartographyCallback(Callback):
         preds = torch.max(logits, dim=-1).indices
         batch_idces = batch['idx'].cpu().numpy().squeeze()
         self.confidences[key][batch_idces] = confidence_elementwise(targets, logits).squeeze()
-        self.confidences[key][batch_idces] = correct_elementwise(targets, preds).squeeze()
+        self.correctnesses[key][batch_idces] = correct_elementwise(targets, preds).squeeze()
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         self.batch_end_accumulate(batch, outputs, "train")
