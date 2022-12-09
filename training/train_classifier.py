@@ -479,6 +479,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     ckpts_path = PurePath(str(run_path) + "/ckpts")
     lazymkdir(ckpts_path)
     cartography_path = PurePath(dir_settings["cartography_save_dir"] + "/" + run_name)
+    lazymkdir(cartography_path)
 
     callbacks = [TQDMProgressBar(refresh_rate=4)]
     if collect_cartography:
