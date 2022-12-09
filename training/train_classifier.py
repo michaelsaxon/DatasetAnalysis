@@ -481,10 +481,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
 
     callbacks = [TQDMProgressBar(refresh_rate=4)]
     if collect_cartography:
-        callbacks.append(CartographyCallback(
-            
-            f"{ckpts_path}/{run_name}_cart"
-        ))
+        callbacks.append(CartographyCallback(f"{str(run_path)}/{run_name}_cart"))
 
     print("Loading model...")
     checkpoint = ModelCheckpoint(dirpath=ckpts_path, monitor="val_accuracy", mode="max",
