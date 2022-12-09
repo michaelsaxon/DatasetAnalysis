@@ -14,7 +14,6 @@ def define_samplewise_metric(key_nums_dict):
 def confidence_elementwise(targets, logits):
     print(logits.shape)
     print(targets.shape )
-    torch.gather()
     return torch.gather(logits, -1, targets.unsqueeze(-1)).detach().cpu().numpy()
 
 def correct_elementwise(targets, preds):
