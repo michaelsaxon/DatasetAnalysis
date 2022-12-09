@@ -24,7 +24,7 @@ def accumulate_cartography_metric(keys, values, target_dict):
     target_dict[keys] = values.squeeze()
 
 class CartographyCallback(Callback):
-    def __init__(self, key_nums, output_base):
+    def __init__(self, output_base):
         super().__init__()
         self.output_base = output_base
         lazymkdir(output_base)
