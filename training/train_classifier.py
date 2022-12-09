@@ -94,7 +94,6 @@ class RobertaClassifier(pl.LightningModule):
 
     def forward_loss_acc(self, batch):
         outputs = self(input_ids = batch['input_ids'], attention_mask=batch['attention_mask'])
-        print(outputs)
         targets = batch['labels'].squeeze()
         logits = outputs.logits
         preds = torch.max(logits, dim=-1).indices
