@@ -99,7 +99,7 @@ class RobertaClassifier(pl.LightningModule):
         preds = torch.max(logits, dim=-1).indices
         loss = self.loss_fct(logits, targets)
         acc = torch.sum(torch.eq(preds, targets)) / targets.shape[0]
-        return preds, loss, acc
+        return preds, loss, acc, logits
 
 
     def configure_optimizers(self):
@@ -107,23 +107,23 @@ class RobertaClassifier(pl.LightningModule):
         return optimizer
 
     def training_step(self, batch, batch_idx):
-        _, loss, acc = self.forward_loss_acc(batch)
+        preds, loss, acc, logits = self.forward_loss_acc(batch)
         self.log('train_loss', loss)
         self.log('train_accuracy', acc)
-        return loss
+        return {"preds" : preds, "loss" : loss, "acc" : acc, "logits" : logits}
 
     def validation_step(self, batch, batch_idx):
         preds, loss, acc = self.forward_loss_acc(batch)
         self.log('val_loss', loss)
         self.log('val_accuracy', acc)
         self.log('val_best_acc', acc)
-        return preds
+        return {"preds" : preds, "loss" : loss, "acc" : acc, "logits" : logits}
 
     def test_step(self, batch, batch_idx):
         preds, loss, acc = self.forward_loss_acc(batch)
         self.log('test_loss', loss)
         self.log('test_accuracy', acc)
-        return preds
+        return {"preds" : preds, "loss" : loss, "acc" : acc, "logits" : logits}
 
 
 def load_sick_data(basepath, label_id = True):

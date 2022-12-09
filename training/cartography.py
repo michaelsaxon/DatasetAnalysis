@@ -35,9 +35,8 @@ class CartographyCallback(Callback):
         np.save(fname.replace("$$$", "corr"), self.correctnesses[key])
 
     def batch_end_accumulate(self, batch, outputs, key):
-        print(outputs)
         targets = batch['labels'].squeeze()
-        logits = outputs.logits
+        logits = outputs['logits']
         preds = torch.max(logits, dim=-1).indices
         batch_idces = batch['idx'].cpu().numpy().squeeze()
         accumulate_cartography_metric(
