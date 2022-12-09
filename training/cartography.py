@@ -23,6 +23,7 @@ def accumulate_cartography_metric(keys, values, target_dict):
     # keys, values are ndarrays
     print(keys)
     print(values)
+    print(target_dict)
     target_dict[keys] = values.squeeze()
 
 class CartographyCallback(Callback):
