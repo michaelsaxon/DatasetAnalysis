@@ -13,8 +13,9 @@ def define_samplewise_metric(key_nums_dict):
 # C_i = 1/E \sum_epochs p_model(label | input)
 def confidence_elementwise(targets, logits):
     print(logits.shape)
-    print(targets.shape)
-    return torch.gather(logits, -1, targets.squeeze()).detach().cpu().numpy()
+    print(targets.shape )
+    torch.gather()
+    return torch.gather(logits, -1, targets.unsqueeze(-1)).detach().cpu().numpy()
 
 def correct_elementwise(targets, preds):
     return torch.eq(preds, targets).squeeze().detach().cpu().numpy()
