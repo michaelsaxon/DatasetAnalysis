@@ -375,7 +375,7 @@ def choose_load_model_tokenizer(model_id, dataset):
 @click.option('--s1only', is_flag=True)
 @click.option('--collect_cartography', is_flag=True, help="run the dataset cartography metrics, tracking samplewise confidence and correctness")
 def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bias, s2only, s1only, pretrained_path, collect_cartography):
-    dir_settings = get_write_settings(["data_save_dir", "dataset_dir"])
+    dir_settings = get_write_settings(["data_save_dir", "dataset_dir", "cartography_save_dir"])
 
     wandb.login()
 
@@ -478,10 +478,11 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     lazymkdir(run_path)
     ckpts_path = PurePath(str(run_path) + "/ckpts")
     lazymkdir(ckpts_path)
+    cartography_path = PurePath(dir_settings["cartography_save_dir"] + "/" + run_name)
 
     callbacks = [TQDMProgressBar(refresh_rate=4)]
     if collect_cartography:
-        callbacks.append(CartographyCallback(f"{str(run_path)}/cartography/"))
+        callbacks.append(CartographyCallback(cartography_path))
 
     print("Loading model...")
     checkpoint = ModelCheckpoint(dirpath=ckpts_path, monitor="val_accuracy", mode="max",

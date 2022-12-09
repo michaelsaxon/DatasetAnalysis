@@ -25,7 +25,6 @@ class CartographyCallback(Callback):
     def __init__(self, output_base):
         super().__init__()
         self.output_base = output_base
-        os.makedirs(output_base, exist_ok=True)
 
     def init_buffers(self, trainer):
         key_nums = {

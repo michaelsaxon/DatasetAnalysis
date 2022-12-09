@@ -4,9 +4,7 @@ from typing import List
 import glob
 
 def lazymkdir(file):
-    head = os.path.split(file)[0]
-    if not os.path.isdir(head):
-        os.mkdir(head)
+    os.makedirs(file, exist_ok=True)
     return file
 
 def get_write_setting(requested_setting, settings_dir):
