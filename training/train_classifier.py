@@ -257,7 +257,7 @@ class NLIDataset(Dataset):
                     s1t["attention_mask"][:,1:], s2t["attention_mask"][:,1:]], dim=1)
             }
         datum["labels"] = torch.tensor([label])
-        datum["idx"] = torch.tensor(idx_src)
+        datum["idx"] = torch.tensor([idx_src])
         return datum
 
 
