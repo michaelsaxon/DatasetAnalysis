@@ -9,6 +9,7 @@ CUDA_VISIBLE_DEVICES=2 python dataset_to_clusters.py --s2only --lastdense --data
 CUDA_VISIBLE_DEVICES=3 python dataset_to_clusters.py --s2only --lastdense --dataset MB
 CUDA_VISIBLE_DEVICES=0 python dataset_to_clusters.py --s2only --lastdense --dataset SdbA
 CUDA_VISIBLE_DEVICES=1 python dataset_to_clusters.py --s2only --lastdense --dataset MdbA
+CUDA_VISIBLE_DEVICES=1 python dataset_to_clusters.py --s1only --lastdense --dataset F
 
 """
 import click
@@ -323,7 +324,7 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2, thr
 
 
 @click.command()
-@click.option('--n_gpus', default=1, help='number of gpus')
+@click.option('--skip_gpu', is_flag=True)
 @click.option('--dataset', help="S, M, A1, A2, A3, OC, SICK, etc")
 @click.option('--batch_size', default=48)
 @click.option('--biased', is_flag=True)
@@ -334,7 +335,7 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2, thr
 @click.option('--n_clusters', default=50)
 @click.option('--tsne_thresh', default=2.5)
 @click.option('--tsne', is_flag=True)
-def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense, tsne_thresh, tsne):
+def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense, tsne_thresh, tsne):
     model_id, pretrained_path = read_models_csv(dataset)
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
@@ -348,8 +349,9 @@ def main(n_gpus, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_cl
     else:
         factor = 1
 
-    model.cuda()
-    ltmodel.cuda()
+    if not skip_gpu:
+        model.cuda()
+        ltmodel.cuda()
 
     if s1only:
         s2only = False

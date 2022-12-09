@@ -73,28 +73,25 @@ def single_dataset_experiment(dataset, batch_size, s1only, n_clusters, lastdense
 
 
 @click.command()
-@click.option('--dataset', help="S, M, A1, A2, A3, OC, SICK, etc")
-@click.option('--batch_size', default=16)
-@click.option('--s1only', is_flag=True)
 @click.option('--n_clusters', default=50)
-@click.option('--lastdense', is_flag=True)
-def main(dataset, batch_size, s1only, n_clusters, lastdense):
-    print(single_dataset_experiment(dataset, batch_size, s1only, n_clusters, lastdense))
-
-
-if __name__ == "__main__":
-    #main()
+def main(n_clusters):
+    #print(single_dataset_experiment(dataset, batch_size, s1only, n_clusters, lastdense))
     results = []
     for ds in ["SICK", "S", "MB", "MU", "X", "F", "AA", "A1", "A2", "A3", "OC", "CF"]:
         if ds == "F":
-            results.append(single_dataset_experiment(ds, 8, True, 50, False))
+            results.append(single_dataset_experiment(ds, 8, True, n_clusters, False))
         elif ds == "CF":
-            results.append(single_dataset_experiment(ds, 16, True, 50, False))
-            results.append(single_dataset_experiment(ds, 16, False, 50, False))
+            results.append(single_dataset_experiment(ds, 16, True, n_clusters, False))
+            results.append(single_dataset_experiment(ds, 16, False, n_clusters, False))
         else:
-            results.append(single_dataset_experiment(ds, 16, False, 50, False))
+            results.append(single_dataset_experiment(ds, 16, False, n_clusters, False))
     print("########FINAL RESULTS#########")
     print("avg_cossim, cossim@.8, cossim@0")
     for r1, r2, r3 in results:
         print(f"{r1:.4f}, {r2:.4f}, {r3:.4f}")
+
+
+
+if __name__ == "__main__":
+    main()
         

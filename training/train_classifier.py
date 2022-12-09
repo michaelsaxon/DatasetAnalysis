@@ -30,7 +30,8 @@ import time
 # is this really the way to pull out of manage settings?
 from manage_settings import get_write_settings, lazymkdir
 
-BASEPATH = "/data2/saxon/bart_test"
+from cartography import CartographyCallback
+
 
 MAX_MODEL_LEN_HACK = 512
 
@@ -73,13 +74,14 @@ for i, label in enumerate(FULL_LABEL_MAP.keys()):
     LABEL_IDS[FULL_LABEL_MAP[label]] = i
 
 
+
+
 class RobertaClassifier(pl.LightningModule):
     def __init__(self, roberta_for_seq, learning_rate, loss_fct = torch.nn.CrossEntropyLoss()):
         super().__init__()
         self.model = roberta_for_seq
         self.learning_rate = learning_rate
         self.loss_fct = loss_fct
-
 
     def forward(self, **kwargs):
         return self.model(**kwargs)
@@ -103,7 +105,6 @@ class RobertaClassifier(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr = self.learning_rate)
         return optimizer
-
 
     def training_step(self, batch, batch_idx):
         _, loss, acc = self.forward_loss_acc(batch)
@@ -190,7 +191,7 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
 
     sents = []
 
-    for line in tqdm(lines):
+    for i, line in enumerate(tqdm(lines)):
         line = json.loads(line)
         if dataset == "S":
             lst = list(line["annotator_labels"])
@@ -210,7 +211,7 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
         if label_id:
             # defaults to neutral
             label = LABEL_IDS.get(label, LABEL_IDS["neutral"])
-        sents.append((s1, s2, label))
+        sents.append((s1, s2, label, i))
     
     return sents
 
@@ -230,7 +231,7 @@ class NLIDataset(Dataset):
         return self.length
 
     def __getitem__(self, idx):
-        s1, s2, label = self.sents[idx]
+        s1, s2, label, idx_src = self.sents[idx]
         s1t = self.tok(s1, return_tensors="pt")
         s2t = self.tok(s2, return_tensors="pt")
         if self.bias:
@@ -256,6 +257,7 @@ class NLIDataset(Dataset):
                     s1t["attention_mask"][:,1:], s2t["attention_mask"][:,1:]], dim=1)
             }
         datum["labels"] = torch.tensor([label])
+        datum["idx"] = torch.tensor(idx_src)
         return datum
 
 
@@ -373,7 +375,8 @@ def choose_load_model_tokenizer(model_id, dataset):
 @click.option('--extreme_bias', is_flag=True)
 @click.option('--s2only', is_flag=True)
 @click.option('--s1only', is_flag=True)
-def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bias, s2only, s1only, pretrained_path):
+@click.option('--collect_cartography', is_flag=True, help="run the dataset cartography metrics, tracking samplewise confidence and correctness")
+def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bias, s2only, s1only, pretrained_path, collect_cartography):
     dir_settings = get_write_settings(["data_save_dir", "dataset_dir"])
 
     wandb.login()
@@ -478,6 +481,13 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
     ckpts_path = PurePath(str(run_path) + "/ckpts")
     lazymkdir(ckpts_path)
 
+    callbacks = []
+    if collect_cartography:
+        callbacks.append(CartographyCallback(
+            {"train" : len(nli_data.train), "val" : len(nli_data.valid), "test" : len(nli_data.test)}, 
+            f"{ckpts_path}/{run_name}_cart"
+        ))
+
     print("Loading model...")
     checkpoint = ModelCheckpoint(dirpath=ckpts_path, monitor="val_accuracy", mode="max",
         save_last=True, save_top_k=2)
@@ -485,7 +495,7 @@ def main(n_gpus, n_epochs, dataset, lr, biased, model_id, batch_size, extreme_bi
 
     trainer = pl.Trainer(gpus = n_gpus, max_epochs = n_epochs, 
         checkpoint_callback = checkpoint, progress_bar_refresh_rate = 4,
-        logger = wandb_logger)
+        logger = wandb_logger, callbacks = callbacks)
     print("Training...")
     trainer.fit(ltmodel, nli_data)
     trainer.test(ltmodel, nli_data)
