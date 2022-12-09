@@ -6,7 +6,7 @@ from manage_settings import get_write_settings, lazymkdir
 def define_samplewise_metric(key_nums_dict):
     out = {}
     for key in key_nums_dict.keys():
-        out[key] = np.array(key_nums_dict[key])
+        out[key] = np.zeros(key_nums_dict[key])
     return out
 
 # confidence
