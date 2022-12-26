@@ -39,13 +39,15 @@ def _pksave(obj, fname):
 def _pkload(fname):
     return pickle.load(open(fname, "rb"))
 
-def gen_cache_fit(fname, data, genfn, skip = False, loadfn = _pkload, savefn = _pksave):
+def gen_cache_fit(fname, data, genfn, skip = False, loadfn = _pkload, savefn = _pksave, force_load = False):
     if skip:
         obj = genfn(data)
     else:
         if os.path.exists(fname):
             obj = loadfn(fname)
         else:
+            if force_load:
+                raise Exception(f"No precomputed object at path {fname}, --force_load specified.")
             obj = genfn(data)
             savefn(obj, fname)
     return obj
@@ -74,10 +76,16 @@ def cuda_dict(tensor_dict):
 
 ## implement each step in the eval, pca, cluster pipeline
 # run the ltmodel to get the embeddings
-def collect_embeddings(nli_dataset, ltmodel):
+def collect_embeddings(nli_dataset, ltmodel, partition="test"):
     # maybe cuda if we want
     print("Collecting embeddings...")
-    for batch in tqdm(nli_dataset.test_dataloader()):
+    if partition == "test":
+        dataloader = nli_dataset.test_dataloader()
+    elif partition == "train":
+        dataloader = nli_dataset.train_dataloader()
+    elif partition == "val":
+        dataloader = nli_dataset.val_dataloader()
+    for batch in tqdm(dataloader):
         cuda_dict(batch)
         batch_embs = ltmodel.forward_get_embs(batch)
         yield batch_embs, batch["labels"]
@@ -118,32 +126,32 @@ def label_lists_to_arrays(label_lists):
     return X_list, labels
 
 # this is a bundle of the two prev functions to interface with auto caching
-def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None, lastdense = False):
+def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None, lastdense = False, partition = "test"):
     if tmp_save_dir == None:
         if lastdense:
-            embs_labs_set_iterator = collect_last_dense(collect_embeddings(nli_data, ltmodel), ltmodel)
+            embs_labs_set_iterator = collect_last_dense(collect_embeddings(nli_data, ltmodel, partition), ltmodel)
         else:
-            embs_labs_set_iterator = collect_embeddings(nli_data, ltmodel)
+            embs_labs_set_iterator = collect_embeddings(nli_data, ltmodel, partition)
         embs, labs = label_lists_to_arrays(group_by_label(embs_labs_set_iterator))
         return embs, labs
     else:
-        xname = PurePath(tmp_save_dir + "/embs.npy")
-        lname = PurePath(tmp_save_dir + "/labs.npy")
+        xname = PurePath(tmp_save_dir + f"/embs_{partition}.npy")
+        lname = PurePath(tmp_save_dir + f"/labs_{partition}.npy")
         if os.path.exists(xname) and os.path.exists(lname):
             embs = np.load(xname)
             labs = np.load(lname)
         else:
             if lastdense:
-                embs_labs_set_iterator = collect_last_dense(collect_embeddings(nli_data, ltmodel), ltmodel)
+                embs_labs_set_iterator = collect_last_dense(collect_embeddings(nli_data, ltmodel, partition), ltmodel)
             else:
-                embs_labs_set_iterator = collect_embeddings(nli_data, ltmodel)
+                embs_labs_set_iterator = collect_embeddings(nli_data, ltmodel, partition)
             embs, labs = label_lists_to_arrays(group_by_label(embs_labs_set_iterator))
             np.save(xname, embs)
             np.save(lname, labs)
     return embs, labs
 
 # map the label_lists dict into pca-transformed embeddings
-def pca_fit_transform(embs, n_components=50, tmp_save_dir = None):
+def pca_fit_transform(embs, n_components=50, tmp_save_dir = None, force_load = False):
     print("Performing PCA reduction...")
     if tmp_save_dir == None:
         skip = True
@@ -151,11 +159,11 @@ def pca_fit_transform(embs, n_components=50, tmp_save_dir = None):
     else:
         skip = False
     pca_fname = PurePath(tmp_save_dir + f"/pca-{n_components}.pckl")
-    pca_model = gen_cache_fit(pca_fname, embs, PCA(n_components=n_components).fit, skip=skip)
+    pca_model = gen_cache_fit(pca_fname, embs, PCA(n_components=n_components).fit, skip=skip, force_load=force_load)
     return pca_model.transform(embs)
 
 # produce the clustering
-def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None):
+def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None, force_load = False):
     print("Performing KMeans fitting...")    
     if tmp_save_dir == None:
         skip = True
@@ -163,7 +171,7 @@ def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None):
     else:
         skip = False
     kms_fname = PurePath(tmp_save_dir + f"/kms-{n_clusters}.pckl")
-    kms_model = gen_cache_fit(kms_fname, embs, KMeans(n_clusters=n_clusters, init='k-means++').fit, skip=skip)
+    kms_model = gen_cache_fit(kms_fname, embs, KMeans(n_clusters=n_clusters, init='k-means++').fit, skip=skip, force_load=force_load)
     return kms_model.predict(embs)
 
 
@@ -332,10 +340,11 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2, thr
 @click.option('--s2only', is_flag=True)
 @click.option('--s1only', is_flag=True)
 @click.option('--lastdense', is_flag=True)
+@click.option('--skip_pca', is_flag=True)
 @click.option('--n_clusters', default=50)
 @click.option('--tsne_thresh', default=2.5)
 @click.option('--tsne', is_flag=True)
-def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense, tsne_thresh, tsne):
+def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense, tsne_thresh, tsne, skip_pca):
     model_id, pretrained_path = read_models_csv(dataset)
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
@@ -367,9 +376,12 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     # collect lists of numpy arrays
     embs, labs = get_numpy_embs(nli_data, ltmodel, tmp_save_dir=intermed_comp_dir, lastdense = lastdense)
     # pca transformed embeddings
-    embs_pca = pca_fit_transform(embs, tmp_save_dir=intermed_comp_dir)
+    if not skip_pca:
+        embs_pca = pca_fit_transform(embs, tmp_save_dir=intermed_comp_dir)
+    else:
+        embs_pca = embs
     # cluster-labeled embeddings
-    embs_cll = kmeans_fit_transform(embs_pca, n_clusters = n_clusters)
+    embs_cll = kmeans_fit_transform(embs_pca, tmp_save_dir=intermed_comp_dir, n_clusters = n_clusters)
     vectors = get_cluster_vectors(embs, embs_cll)
     ## evaluate the PECO measure
     # get the cluster cross entropies

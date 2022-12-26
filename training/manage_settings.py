@@ -51,3 +51,4 @@ def read_models_csv(dataset, csv_path = "finetuned_models.csv", s2only = False, 
         potential_checkpoints = glob.glob(pretrained_path + "/checkpoints/*")
         pretrained_path = potential_checkpoints[-1]
     return model_name, pretrained_path
+

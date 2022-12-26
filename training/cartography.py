@@ -71,3 +71,19 @@ class CartographyCallback(Callback):
     
     def on_sanity_check_start(self, trainer, pl_module):
         self.init_buffers(trainer)
+
+def cartography_from_dir(folder, n_epochs, key):
+    if key == 'test':
+        epochs = [n_epochs]
+    else:
+        epochs = list(range(n_epochs))
+    confs = []
+    #corrs = []
+    for epoch in epochs:
+        confs.append(np.load(folder + f"/conf_{key}_{epoch}.npy"))
+        #corrs.append(np.load(folder + f"/corr_{key}_{epoch}.npy"))
+    confs = np.stack(confs)
+    #corrs = np.stack(corrs)
+    mus = confs.sum(0) / n_epochs
+    sigmas = np.sqrt(np.sum(np.power(confs - mus, 2) / n_epochs, 0))
+    return mus, sigmas
