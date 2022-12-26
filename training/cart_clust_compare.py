@@ -83,7 +83,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     if s1only:
         s2only = False
 
-    dir_settings = get_write_settings(["dataset_dir", "intersmed_comp_dir_base", "cartography_save_dir"])
+    dir_settings = get_write_settings(["dataset_dir", "intermed_comp_dir_base", "cartography_save_dir"])
 
     intermed_comp_dir = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
         n_clusters, lastdense, (biased, extreme_bias, s2only or s1only))
