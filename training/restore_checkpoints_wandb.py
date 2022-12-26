@@ -1,5 +1,6 @@
 import wandb
 import click
+import os
 
 from manage_settings import get_write_settings
 
@@ -10,11 +11,7 @@ def main(name):
 
     fname = name.split("-")[-1].split(":")[0]
 
-    run = wandb.init()
-
-    artifact = run.use_artifact(name, type='model')
-
-    artifact_dir = artifact.download(dir_settings["model_ckpts_path"] + f"/{fname}/", recursive=True)
+    artifact_dir = wandb.restore(name, os.path.join(dir_settings["model_ckpts_path"], f"{fname}/"))
 
     print(artifact_dir)
 
