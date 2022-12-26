@@ -14,7 +14,9 @@ def main(name):
 
     artifact = run.use_artifact(name, type='model')
 
-    artifact_dir = artifact.download(dir_settings["model_ckpts_path"] + f"/{fname}/")
+    artifact_dir = artifact.download(dir_settings["model_ckpts_path"] + f"/{fname}/", recursive=True)
+
+    print(artifact_dir)
 
 
 
