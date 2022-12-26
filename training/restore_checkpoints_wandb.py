@@ -15,7 +15,7 @@ def main(name):
 
     artifact = api.artifact(name)
 
-    artifact_dir = artifact.download(os.path.join(dir_settings["model_ckpts_path"], f"{fname}/"), True)
+    artifact_dir = artifact.download(os.path.join(dir_settings["model_ckpts_path"], f"{fname}/checkpoints/"), True)
     
     print(artifact_dir)
 
