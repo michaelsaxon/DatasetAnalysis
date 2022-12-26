@@ -11,8 +11,12 @@ def main(name):
 
     fname = name.split("-")[-1].split(":")[0]
 
-    artifact_dir = wandb.restore(name, os.path.join(dir_settings["model_ckpts_path"], f"{fname}/"))
+    api = wandb.Api()
 
+    artifact = api.artifact(name)
+
+    artifact_dir = artifact.download(os.path.join(dir_settings["model_ckpts_path"], f"{fname}/"), True)
+    
     print(artifact_dir)
 
 
