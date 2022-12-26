@@ -50,7 +50,7 @@ def read_models_csv(dataset, csv_path = "finetuned_models.csv", s2only = False, 
     if pretrained_path[-4:] != "ckpt":
         potential_checkpoints = glob.glob(pretrained_path + "/checkpoints/*")
         if len(potential_checkpoints) == 0:
-            raise Exception(f"No checkpoint for dataset {dataset} found at path {pretrained_path}/checkpoints!")
+            raise FileNotFoundError(f"No checkpoint for dataset {dataset} found at path {pretrained_path}/checkpoints!")
         pretrained_path = potential_checkpoints[-1]
     return model_name, pretrained_path
 
