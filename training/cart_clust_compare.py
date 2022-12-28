@@ -103,7 +103,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     # cluster-labeled embeddings
     embs_cll = kmeans_fit_transform(embs_pca, tmp_save_dir=intermed_comp_dir, n_clusters = n_clusters, force_load = True)
 
-    mus, sigmas = cartography_from_dir(dir_settings["cartography_save_dir"], n_epochs=n_epochs)
+    mus, sigmas = cartography_from_dir(dir_settings["cartography_save_dir"], n_epochs=n_epochs, key="val")
 
     mus_dist = cluster_values_to_dists(embs_cll, mus, n_clusters = n_clusters)
     sigmas_dist = cluster_values_to_dists(embs_cll, sigmas, n_clusters = n_clusters)
