@@ -126,7 +126,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
 
     #is_outlier = "outlier" * is_outlier + "not outlier" * (1-is_outlier)
 
-    df = pd.DataFrame(np.stack([embs_cll, mus, sigmas, is_outlier], axis=-1), columns = ["cluster", "mus", "sigmas", "outlier"])
+    df = pd.DataFrame(np.stack([embs_cll, mus, sigmas, is_outlier, clusters_L2], axis=-1), columns = ["cluster", "mus", "sigmas", "outlier", "L2"])
 
     # assign "outlier" to some clusters
 
@@ -134,7 +134,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
 
     print("Plotting...")
 
-    sns.histplot(df, x="mus", y="clusters_L2", hue="outlier", kde=True)
+    sns.histplot(df, x="mus", y="L2", hue="outlier", kde=True)
     plt.savefig("histogram_cartography.png")
 
 
