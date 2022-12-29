@@ -116,7 +116,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     clusters_L2 = cluster_L2(cluster_dists, global_dist)
     clusters_L2 = np.arange(clusters_L2.shape[0]) * (clusters_L2 > 0.25) + -1 * (clusters_L2 <= 0.25)
 
-    is_outlier = (clusters_L2.expand_dims(0) == embs_cll.expand_dims(-1)).sum(-1)
+    is_outlier = (np.expand_dims(clusters_L2, 0) == np.expand_dims(embs_cll, -1)).sum(-1)
 
     print(is_outlier)
 
