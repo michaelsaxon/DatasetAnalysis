@@ -53,8 +53,8 @@ def cluster_values_to_dists(embs_cll, values, n_clusters):
 
 def hist_by_L2_bin(df):
     fig, axs = plt.subplots(2, 1)
-    sns.histplot(df[df["outlier"] == True], x="mus", element="step", ax = axs[0], bins=50, binrange=(0,1), color="blue")
-    sns.histplot(df[df["outlier"] == False], x="mus", element="step", ax = axs[1], bins=50, binrange=(0,1), color="blue")
+    sns.histplot(df[df["outlier"] == True], x="mus", element="step", ax = axs[0], bins=50, binrange=(0,1), color="orange", kde=True)
+    sns.histplot(df[df["outlier"] == False], x="mus", element="step", ax = axs[1], bins=50, binrange=(0,1), color="blue", kde=True)
     fig.savefig("histogram_cartography.png")
 
 
