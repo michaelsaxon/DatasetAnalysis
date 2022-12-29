@@ -112,7 +112,11 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     mus_dist = cluster_values_to_dists(embs_cll, mus, n_clusters = n_clusters)
     sigmas_dist = cluster_values_to_dists(embs_cll, sigmas, n_clusters = n_clusters)
 
+
+
     df = pd.DataFrame(np.stack([embs_cll, mus, sigmas], axis=-1), columns = ["cluster", "mus", "sigmas"])
+
+    print("Plotting...")
 
     sns.histplot(df, x="mus", hue="cluster", kde=True, log_scale=True)
     plt.savefig("histogram_cartography.png")
