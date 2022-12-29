@@ -130,7 +130,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
 
     print("Plotting...")
 
-    sns.histplot(df, x="mus", hue="cluster", kde=True)
+    sns.histplot(df, x="mus", hue="outlier", kde=True)
     plt.savefig("histogram_cartography.png")
 
 
