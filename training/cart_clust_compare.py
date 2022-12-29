@@ -68,7 +68,7 @@ def hist_by_L2_bin(df):
 @click.option('--s1only', is_flag=True)
 @click.option('--lastdense', is_flag=True)
 @click.option('--n_clusters', default=50)
-@click.option('--n_epochs', default=3)]
+@click.option('--n_epochs', default=3)
 @click.option('--threshold', default=0.25)
 def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense, n_epochs, threshold):
     model_id, pretrained_path = read_models_csv(dataset)
