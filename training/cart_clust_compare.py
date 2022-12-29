@@ -35,7 +35,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from cartography import cartography_from_dir
+from cartography import cartography_from_dir, find_cartography_dir
 
 
 # map val set samples into an existing test set clustering (so the clusters can be characterized)
@@ -103,7 +103,11 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     # cluster-labeled embeddings
     embs_cll = kmeans_fit_transform(embs_pca, tmp_save_dir=intermed_comp_dir, n_clusters = n_clusters, force_load = True)
 
-    mus, sigmas = cartography_from_dir(dir_settings["cartography_save_dir"], n_epochs=n_epochs, key="val")
+    mus, sigmas = cartography_from_dir(
+            find_cartography_dir(dir_settings["cartography_save_dir"], dataset, model_id),
+            n_epochs=n_epochs,
+            key="val"
+        )
 
     mus_dist = cluster_values_to_dists(embs_cll, mus, n_clusters = n_clusters)
     sigmas_dist = cluster_values_to_dists(embs_cll, sigmas, n_clusters = n_clusters)

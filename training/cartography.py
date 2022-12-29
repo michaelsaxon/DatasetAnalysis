@@ -3,7 +3,8 @@ import torch.nn.functional as F
 import numpy as np
 from pytorch_lightning.callbacks import Callback
 from manage_settings import get_write_settings, lazymkdir
-import os
+import glob
+from pathlib import PurePath
 
 def define_samplewise_metric(key_nums_dict):
     out = {}
@@ -80,10 +81,24 @@ def cartography_from_dir(folder, n_epochs, key):
     confs = []
     #corrs = []
     for epoch in epochs:
-        confs.append(np.load(folder + f"/conf_{key}_{epoch}.npy"))
+        confs.append(np.load(PurePath(folder + f"/conf_{key}_{epoch}.npy")))
         #corrs.append(np.load(folder + f"/corr_{key}_{epoch}.npy"))
     confs = np.stack(confs)
     #corrs = np.stack(corrs)
     mus = confs.sum(0) / n_epochs
     sigmas = np.sqrt(np.sum(np.power(confs - mus, 2) / n_epochs, 0))
     return mus, sigmas
+
+def find_cartography_dir(folder, dataset, model):
+    dataset_model_stub = str(PurePath(folder + f"{dataset}-{model}-"))
+    folder_options = glob.glob(f"{dataset_model_stub}*")
+    if len(folder_options) == 1:
+        return folder_options[0]
+    elif len(folder_options) > 1:
+        print("Please select one from:")
+        for i in range(len(folder_options)):
+            print(f"{i} : {folder_options[i]}")
+        choice = input("Choice: ")
+        return folder_options[choice]
+    else:
+        raise FileNotFoundError(f"Couldn't find a matching checkpoint folder for dataset {dataset}, model {model} in path {folder}")
