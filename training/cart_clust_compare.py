@@ -118,15 +118,21 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
 
     cluster_dists, global_dist = cluster_preds_to_dists(embs_cll, labs, n_clusters = n_clusters)
     clusters_L2 = cluster_L2(cluster_dists, global_dist)
-    clusters_L2 = np.arange(clusters_L2.shape[0]) * (clusters_L2 > 0.25) + -1 * (clusters_L2 <= 0.25)
+    
+    outlier_cluster_ids = np.arange(clusters_L2.shape[0]) * (clusters_L2 > 0.25) + -1 * (clusters_L2 <= 0.25)
 
-    is_outlier = (np.expand_dims(clusters_L2, 0) == np.expand_dims(embs_cll, -1)).sum(-1)
+    is_outlier = (np.expand_dims(outlier_cluster_ids, 0) == np.expand_dims(embs_cll, -1)).sum(-1)
+
+    sample_cluster_L2 = (
+        (np.expand_dims(embs_cll, -1) == np.expand_dims(np.arange(clusters_L2.shape[0]), 0)) * np.expand_dims(clusters_L2, 0)
+    ).sum(-1)
+
 
     # print(is_outlier)
 
     #is_outlier = "outlier" * is_outlier + "not outlier" * (1-is_outlier)
 
-    df = pd.DataFrame(np.stack([embs_cll, mus, sigmas, is_outlier, clusters_L2], axis=-1), columns = ["cluster", "mus", "sigmas", "outlier", "L2"])
+    df = pd.DataFrame(np.stack([embs_cll, mus, sigmas, is_outlier, sample_cluster_L2], axis=-1), columns = ["cluster", "mus", "sigmas", "outlier", "L2"])
 
     # assign "outlier" to some clusters
 
