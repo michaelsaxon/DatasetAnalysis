@@ -51,6 +51,10 @@ def cluster_values_to_dists(embs_cll, values, n_clusters):
     return cluster_dists
 
 
+#def hist_by_L2_bin(bins):
+#    fig, axs = plt.subplots(7,1)
+
+
 @click.command()
 @click.option('--skip_gpu', is_flag=True)
 @click.option('--dataset', help="S, M, A1, A2, A3, OC, SICK, etc")
@@ -130,7 +134,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
 
     print("Plotting...")
 
-    sns.histplot(df, x="mus", y="outlier", hue="outlier", kde=True)
+    sns.histplot(df, x="mus", y="clusters_L2", hue="outlier", kde=True)
     plt.savefig("histogram_cartography.png")
 
 
