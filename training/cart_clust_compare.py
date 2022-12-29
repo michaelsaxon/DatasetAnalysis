@@ -118,9 +118,11 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
 
     is_outlier = (np.expand_dims(clusters_L2, 0) == np.expand_dims(embs_cll, -1)).sum(-1)
 
-    print(is_outlier)
+    # print(is_outlier)
 
-    df = pd.DataFrame(np.stack([embs_cll, mus, sigmas], axis=-1), columns = ["cluster", "mus", "sigmas"])
+    is_outlier = "outlier" * is_outlier + "not outlier" * (1-is_outlier)
+
+    df = pd.DataFrame(np.stack([embs_cll, mus, sigmas, is_outlier], axis=-1), columns = ["cluster", "mus", "sigmas", "outlier"])
 
     # assign "outlier" to some clusters
 
