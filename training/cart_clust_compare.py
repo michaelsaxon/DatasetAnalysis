@@ -112,13 +112,23 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     mus_dist = cluster_values_to_dists(embs_cll, mus, n_clusters = n_clusters)
     sigmas_dist = cluster_values_to_dists(embs_cll, sigmas, n_clusters = n_clusters)
 
+    cluster_dists, global_dist = cluster_preds_to_dists(embs_cll, labs, n_clusters = n_clusters)
+    clusters_L2 = cluster_L2(cluster_dists, global_dist)
+    clusters_L2 = np.arange(clusters_L2.shape[0]) * (clusters_L2 > 0.25) + -1 * (clusters_L2 <= 0.25)
 
+    is_outlier = (clusters_L2.unsqueeze(0) == embs_cll.unsqueeze(-1)).sum(-1)
+
+    print(is_outlier)
 
     df = pd.DataFrame(np.stack([embs_cll, mus, sigmas], axis=-1), columns = ["cluster", "mus", "sigmas"])
 
+    # assign "outlier" to some clusters
+
+
+
     print("Plotting...")
 
-    sns.histplot(df, x="mus", hue="cluster", kde=True, log_scale=True)
+    sns.histplot(df, x="mus", hue="cluster", kde=True)
     plt.savefig("histogram_cartography.png")
 
 
