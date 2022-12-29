@@ -114,7 +114,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
 
     df = pd.DataFrame(np.stack([embs_cll, mus, sigmas], axis=-1), columns = ["cluster", "mus", "sigmas"])
 
-    sns.histplot(df, x="mus", y="cluster", hue="cluster")
+    sns.histplot(df, x="mus", y="cluster", kde=True)
     plt.savefig("histogram_cartography.png")
 
 
