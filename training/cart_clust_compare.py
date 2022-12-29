@@ -51,8 +51,11 @@ def cluster_values_to_dists(embs_cll, values, n_clusters):
     return cluster_dists
 
 
-#def hist_by_L2_bin(bins):
-#    fig, axs = plt.subplots(7,1)
+def hist_by_L2_bin(df):
+    fig, axs = plt.subplots(2, 1)
+    sns.histplot(df[df["outlier"] == True], element="step", ax = axs[0], bins=50, binrange=(0,1), color="blue")
+    sns.histplot(df[df["outlier"] == True], element="step", ax = axs[1], bins=50, binrange=(0,1), color="blue")
+    fig.savefig("histogram_cartography.png")
 
 
 @click.command()
@@ -132,16 +135,20 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
 
     #is_outlier = "outlier" * is_outlier + "not outlier" * (1-is_outlier)
 
-    df = pd.DataFrame(np.stack([embs_cll, mus, sigmas, is_outlier, sample_cluster_L2], axis=-1), columns = ["cluster", "mus", "sigmas", "outlier", "L2"])
+    df_sample = pd.DataFrame(np.stack([embs_cll, mus, sigmas, is_outlier, sample_cluster_L2], axis=-1), columns = ["cluster", "mus", "sigmas", "outlier", "L2"])
 
+    df_cluster = pd.DataFrame(np.stack([np.arange(clusters_L2.shape[0]), clusters_L2, mus_dist, sigmas_dist], axis=-1))
     # assign "outlier" to some clusters
 
 
 
     print("Plotting...")
 
-    sns.histplot(df, x="mus", y="L2", hue="outlier", bins=10, legend=False)
-    plt.savefig("histogram_cartography.png")
+    #sns.histplot(df, x="mus", y="L2", hue="outlier", bins=10, legend=False)
+    #plt.savefig("histogram_cartography.png")
+
+    # manual histogram algo
+    hist_by_L2_bin(df_sample)
 
 
 if __name__ == "__main__":
