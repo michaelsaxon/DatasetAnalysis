@@ -120,7 +120,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
 
     # print(is_outlier)
 
-    is_outlier = "outlier" * is_outlier + "not outlier" * (1-is_outlier)
+    #is_outlier = "outlier" * is_outlier + "not outlier" * (1-is_outlier)
 
     df = pd.DataFrame(np.stack([embs_cll, mus, sigmas, is_outlier], axis=-1), columns = ["cluster", "mus", "sigmas", "outlier"])
 
