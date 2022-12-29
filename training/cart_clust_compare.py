@@ -68,8 +68,9 @@ def hist_by_L2_bin(df):
 @click.option('--s1only', is_flag=True)
 @click.option('--lastdense', is_flag=True)
 @click.option('--n_clusters', default=50)
-@click.option('--n_epochs', default=3)
-def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense, n_epochs):
+@click.option('--n_epochs', default=3)]
+@click.option('--threshold', default=0.25)
+def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense, n_epochs, threshold):
     model_id, pretrained_path = read_models_csv(dataset)
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
@@ -122,7 +123,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     cluster_dists, global_dist = cluster_preds_to_dists(embs_cll, labs, n_clusters = n_clusters)
     clusters_L2 = cluster_L2(cluster_dists, global_dist)
     
-    outlier_cluster_ids = np.arange(clusters_L2.shape[0]) * (clusters_L2 > 0.25) + -1 * (clusters_L2 <= 0.25)
+    outlier_cluster_ids = np.arange(clusters_L2.shape[0]) * (clusters_L2 > threshold) + -1 * (clusters_L2 <= threshold)
 
     is_outlier = (np.expand_dims(outlier_cluster_ids, 0) == np.expand_dims(embs_cll, -1)).sum(-1)
 
