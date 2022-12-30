@@ -55,8 +55,8 @@ def hist_by_L2_bin(df):
     fig, axs = plt.subplots(2, 1)
     sns.histplot(df[df["outlier"] == True], x="mus", element="step", multiple="stack", ax = axs[0], bins=50, binrange=(0,1), hue="labels", color="orange")
     sns.histplot(df[df["outlier"] == False], x="mus", element="step", multiple="stack", ax = axs[1], bins=50, binrange=(0,1), hue="labels", color="blue")
-    axs[0].legend(pos="upper left")
-    axs[1].legend(pos="upper left")
+    axs[0].legend(loc="upper left")
+    axs[1].legend(loc="upper left")
     fig.savefig("histogram_cartography.png")
 
 
