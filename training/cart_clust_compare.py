@@ -79,8 +79,14 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
     print("Init litmodel...")
+
+    if skip_gpu:
+        map_location = torch.device('cpu')
+    else:
+        map_location = torch.device('cuda')
+
     if pretrained_path != "":
-        ckpt = torch.load(pretrained_path)
+        ckpt = torch.load(pretrained_path, map_location=map_location)
         ltmodel.load_state_dict(ckpt["state_dict"])
     print("Init dataset...")
     if extreme_bias:
