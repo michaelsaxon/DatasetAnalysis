@@ -58,6 +58,8 @@ def hist_by_L2_bin(df):
     axs[0].legend(loc="upper left")
     axs[1].legend(loc="upper left")
     fig.savefig("histogram_cartography.png")
+    print(f'Outliers: {df[df["outlier"] == True]["mus"].mean()}')
+    print(f'Outliers: {df[df["outlier"] == False]["mus"].mean()}')
 
 
 @click.command()
