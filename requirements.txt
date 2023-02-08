@@ -1,6 +1,6 @@
 click
 transformers
-pytorch_lightning
+pytorch-lightning
 wandb
 tqdm
 scikit-learn
