@@ -50,7 +50,8 @@ VALID_DATASETS = {
     "MU" : ("mnli_u", None, ["sentence1", "sentence2"], True),
     "MB" : ("mnli_b", None, ["sentence1", "sentence2"], True),
     "SdbA" : ("debiased_snli_aug", None, ["premise", "hypothesis"], True),
-    "MdbA" : ("debiased_mnli_aug", None, ["premise", "hypothesis"], True)
+    "MdbA" : ("debiased_mnli_aug", None, ["premise", "hypothesis"], True),
+    "W" : ("wanli", None, ["premise", "hypothesis"], True)
 }
 
 FULL_LABEL_MAP = {
@@ -178,6 +179,7 @@ def load_nli_data(basepath, dataset, partition, label_id = True):
         'mnli_b' : f'multinli_1.0/matched/{partition}.jsonl',
         'debiased_snli_aug' : f'debiased_wu/snli_z-aug_{partition}.jsonl',
         'debiased_mnli_aug' : f'debiased_wu/mnli_z-aug_{partition}.jsonl',
+        'wanli' : f'wanli/{partition}.jsonl'
     }
 
     if dataset == "AA":
