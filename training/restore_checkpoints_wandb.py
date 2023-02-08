@@ -29,6 +29,7 @@ def main(name):
             for download_idx in range(2, len(line)):
                 model_name_stub = line[download_idx]
                 full_name = f'saxon/DatasetAnalysis-NLIbias/model-{model_name_stub}:v0'
+                print(full_name)
                 download_file_to(api, dir_settings["model_ckpts_path"], full_name)
 
 
