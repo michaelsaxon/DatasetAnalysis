@@ -52,6 +52,7 @@ def gen_cache_fit(fname, data, genfn, skip = False, loadfn = _pkload, savefn = _
             savefn(obj, fname)
     return obj
 
+"""
 def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, n_clusters, lastdense, biastype = (False, False, False), append=""):
     base = lazymkdir(intermed_comp_dir_base)
     biased, extremebias, s2only = biastype
@@ -64,6 +65,13 @@ def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, n_clusters, lastden
     else:
         biastype = "normal"
     # for now I've only implemented test set
+    foldername = str(PurePath(base + f"/{'ld-'*lastdense}{dataset}-test-{biastype}-n{n_clusters}{append}/.")) + "/."
+    lazymkdir(foldername)
+    return str(foldername)
+"""
+
+def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, n_clusters=None, lastdense=None, biastype = (False, False, False), append=""):
+    base = lazymkdir(intermed_comp_dir_base)
     foldername = str(PurePath(base + f"/{'ld-'*lastdense}{dataset}-test-{biastype}-n{n_clusters}{append}/.")) + "/."
     lazymkdir(foldername)
     return str(foldername)
@@ -126,7 +134,7 @@ def label_lists_to_arrays(label_lists):
     return X_list, labels
 
 # this is a bundle of the two prev functions to interface with auto caching
-def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None, lastdense = False, partition = "test"):
+def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None, lastdense = False, partition = "test", affix=""):
     if tmp_save_dir == None:
         if lastdense:
             embs_labs_set_iterator = collect_last_dense(collect_embeddings(nli_data, ltmodel, partition), ltmodel)
@@ -135,8 +143,8 @@ def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None, lastdense = False, pa
         embs, labs = label_lists_to_arrays(group_by_label(embs_labs_set_iterator))
         return embs, labs
     else:
-        xname = PurePath(tmp_save_dir + f"/embs_{partition}.npy")
-        lname = PurePath(tmp_save_dir + f"/labs_{partition}.npy")
+        xname = PurePath(tmp_save_dir + f"/embs_{partition}{affix}.npy")
+        lname = PurePath(tmp_save_dir + f"/labs_{partition}{affix}.npy")
         if os.path.exists(xname) and os.path.exists(lname):
             embs = np.load(xname)
             labs = np.load(lname)
@@ -163,14 +171,14 @@ def pca_fit_transform(embs, n_components=50, tmp_save_dir = None, force_load = F
     return pca_model.transform(embs)
 
 # produce the clustering
-def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None, force_load = False):
+def kmeans_fit_transform(embs, n_clusters=50, tmp_save_dir = None, force_load = False, pca_affix = ""):
     print("Performing KMeans fitting...")    
     if tmp_save_dir == None:
         skip = True
         tmp_save_dir = ""
     else:
         skip = False
-    kms_fname = PurePath(tmp_save_dir + f"/kms-{n_clusters}.pckl")
+    kms_fname = PurePath(tmp_save_dir + f"/kms-{n_clusters}{pca_affix}.pckl")
     kms_model = gen_cache_fit(kms_fname, embs, KMeans(n_clusters=n_clusters, init='k-means++').fit, skip=skip, force_load=force_load)
     return kms_model.predict(embs)
 
@@ -331,6 +339,8 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2, thr
         return sum_cosine_sims / num_values, num_gtt1 / num_values, num_gtt2 / num_values
 
 
+# should clean out biased vs """""extreme_bias""""""" and make function clearer. 
+# s2only/s1only implemented as maps somehow? extreme_bias should be zero_tokens
 @click.command()
 @click.option('--skip_gpu', is_flag=True)
 @click.option('--dataset', help="S, M, A1, A2, A3, OC, SICK, etc")
@@ -342,9 +352,10 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2, thr
 @click.option('--lastdense', is_flag=True)
 @click.option('--skip_pca', is_flag=True)
 @click.option('--n_clusters', default=50)
+@click.option('--n_components', default=50)
 @click.option('--tsne_thresh', default=2.5)
 @click.option('--tsne', is_flag=True)
-def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, lastdense, tsne_thresh, tsne, skip_pca):
+def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, n_components, lastdense, tsne_thresh, tsne, skip_pca):
     model_id, pretrained_path = read_models_csv(dataset)
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
@@ -365,24 +376,34 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     if s1only:
         s2only = False
 
-    dir_settings = get_write_settings(["data_save_dir", "dataset_dir", "intermed_comp_dir_base"])
+    dir_settings = get_write_settings(["dataset_dir", "intermed_comp_dir_base"])
     
-    intermed_comp_dir = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
-        n_clusters, lastdense, (biased, extreme_bias, s2only or s1only))
+    #intermed_comp_dir = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
+    #    n_clusters, lastdense, (biased, extreme_bias, s2only or s1only))
+    # refactored so we have a single folder per experiment---should only be a prop of dataset, condition---track the details in the inner fnames not the foldername
+    intermed_comp_dir = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset, lastdense = lastdense)
 
     nli_data = plNLIDataModule(tokenizer, dir_settings["dataset_dir"], dataset, batch_size, biased, factor, s2only, s1only)
     nli_data.prepare_data(test_only = True)
 
     # collect lists of numpy arrays
-    embs, labs = get_numpy_embs(nli_data, ltmodel, tmp_save_dir=intermed_comp_dir, lastdense = lastdense)
+    if s1only:
+        affix = "-s1"
+    elif s2only:
+        affix = "-s2"
+    else:
+        affix = ""
+    embs, labs = get_numpy_embs(nli_data, ltmodel, tmp_save_dir=intermed_comp_dir, lastdense = lastdense, affix=affix)
     # pca transformed embeddings
     if not skip_pca:
-        embs_pca = pca_fit_transform(embs, tmp_save_dir=intermed_comp_dir)
+        embs_pca = pca_fit_transform(embs, n_components=n_components, tmp_save_dir=intermed_comp_dir)
+        pca_affix = "-pca{n_components}"
     else:
         embs_pca = embs
+        pca_affix = ""
     # cluster-labeled embeddings
-    embs_cll = kmeans_fit_transform(embs_pca, tmp_save_dir=intermed_comp_dir, n_clusters = n_clusters)
-    vectors = get_cluster_vectors(embs, embs_cll)
+    embs_cll = kmeans_fit_transform(embs_pca, tmp_save_dir=intermed_comp_dir, n_clusters = n_clusters, pca_affix=pca_affix)
+    # vectors = get_cluster_vectors(embs, embs_cll)
     ## evaluate the PECO measure
     # get the cluster cross entropies
     cluster_dists, global_dist = cluster_preds_to_dists(embs_cll, labs, n_clusters = n_clusters)
