@@ -72,7 +72,7 @@ def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, n_clusters, lastden
 
 def setup_intermed_comp_dir(intermed_comp_dir_base, dataset, n_clusters=None, lastdense=None, biastype = (False, False, False), append=""):
     base = lazymkdir(intermed_comp_dir_base)
-    foldername = str(PurePath(base + f"/{'ld-'*lastdense}{dataset}-test-{biastype}-n{n_clusters}{append}/.")) + "/."
+    foldername = str(PurePath(base + f"/{'ld-'*lastdense}{dataset}-test/.")) + "/."
     lazymkdir(foldername)
     return str(foldername)
 
