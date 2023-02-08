@@ -356,7 +356,9 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2, thr
 @click.option('--tsne_thresh', default=2.5)
 @click.option('--tsne', is_flag=True)
 def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, n_components, lastdense, tsne_thresh, tsne, skip_pca):
-    model_id, pretrained_path = read_models_csv(dataset)
+    dir_settings = get_write_settings(["dataset_dir", "intermed_comp_dir_base", "model_ckpts_path"])
+
+    model_id, pretrained_path = read_models_csv(dataset, pretrained_path_base=dir_settings["model_ckpts_path"])
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
     ltmodel = RobertaClassifier(model, learning_rate=0)
     print("Init litmodel...")
@@ -376,7 +378,6 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     if s1only:
         s2only = False
 
-    dir_settings = get_write_settings(["dataset_dir", "intermed_comp_dir_base"])
     
     #intermed_comp_dir = setup_intermed_comp_dir(dir_settings["intermed_comp_dir_base"], dataset,
     #    n_clusters, lastdense, (biased, extreme_bias, s2only or s1only))

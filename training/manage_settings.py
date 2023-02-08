@@ -25,7 +25,7 @@ def get_write_settings(requested_settings : List[str], settings_dir = ".settings
         settings_vals[setting] = get_write_setting(setting, settings_dir)
     return settings_vals
 
-def read_models_csv(dataset, csv_path = "finetuned_models.csv", s2only = False, s1only = False):
+def read_models_csv(dataset, csv_path = "finetuned_models.csv", s2only = False, s1only = False, pretrained_path_base="DatasetAnalysis-NLIbias"):
     if os.path.exists(csv_path):
         lines = open(csv_path, "r").readlines()
         for line in lines:
@@ -37,7 +37,7 @@ def read_models_csv(dataset, csv_path = "finetuned_models.csv", s2only = False, 
                     pretrained_path = line[4]
                 else:
                     pretrained_path = line[2]
-                pretrained_path = f"DatasetAnalysis-NLIbias/{pretrained_path}"
+                pretrained_path = f"{pretrained_path_base}/{pretrained_path}"
                 if pretrained_path[-4:] != "ckpt":
                     potential_checkpoints = glob.glob(pretrained_path + "/checkpoints/*")
                     if len(potential_checkpoints) == 0:

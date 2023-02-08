@@ -3,6 +3,6 @@ transformers
 pytorch_lightning
 wandb
 tqdm
-sklearn
+scikit-learn
 pandas
 matplotlib
