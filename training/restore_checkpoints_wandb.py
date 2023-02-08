@@ -26,7 +26,7 @@ def main(name):
         lines = open("finetuned_models.csv", "r").readlines()
         for line in lines:
             line = line.strip().split(",")
-            for download_idx in range(2, 2):
+            for download_idx in [2]:
                 model_name_stub = line[download_idx]
                 full_name = f'saxon/DatasetAnalysis-NLIbias/model-{model_name_stub}:v0'
                 print(full_name)
