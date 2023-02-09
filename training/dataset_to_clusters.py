@@ -17,6 +17,7 @@ from sklearn import cluster
 
 from train_classifier import *
 from manage_settings import get_write_settings, read_models_csv, lazymkdir
+from transformers import RobertaTokenizer, RobertaForSequenceClassification, BertTokenizer, BertForSequenceClassification
 
 from collections import defaultdict
 
@@ -101,8 +102,11 @@ def collect_embeddings(nli_dataset, ltmodel, partition="test"):
 # run the ltmodel to get the posteriors
 def collect_last_dense(embs_labs_set_iterator, ltmodel):
     for batch_embs, batch_labs in embs_labs_set_iterator:
-        print(ltmodel.model.state_dict().keys())
-        batch_embs = ltmodel.model.classifier.dense(batch_embs)
+        #print(ltmodel.model.state_dict().keys())
+        if ltmodel.model is BertForSequenceClassification: 
+            batch_embs = ltmodel.model.classifier.dense(batch_embs)
+        else:
+            batch_embs = ltmodel.model.classifier(batch_embs)
         batch_embs = batch_embs.squeeze()
         yield batch_embs, batch_labs
 
