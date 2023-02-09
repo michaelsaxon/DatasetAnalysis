@@ -103,10 +103,7 @@ def collect_embeddings(nli_dataset, ltmodel, partition="test"):
 def collect_last_dense(embs_labs_set_iterator, ltmodel):
     for batch_embs, batch_labs in embs_labs_set_iterator:
         #print(ltmodel.model.state_dict().keys())
-        if ltmodel.model is BertForSequenceClassification: 
-            batch_embs = ltmodel.model.classifier.dense(batch_embs)
-        else:
-            batch_embs = ltmodel.model.classifier.weight(batch_embs)
+        batch_embs = ltmodel.model.classifier.dense(batch_embs)
         batch_embs = batch_embs.squeeze()
         print(batch_embs.shape)
         yield batch_embs, batch_labs
@@ -425,7 +422,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     print("##### REPORT #####")
     lines = ["peco_xH,peco_L2,thresh_xH_25,thresh_L2_25", 
         f"{peco_xH:.4f},{peco_L2:.4f},{threshscore_xH_25:.4f},{threshscore_L2_25:.4f}"]
-    with open(PurePath(intermed_comp_dir + "/results.csv"), "w") as f:
+    with open(PurePath(intermed_comp_dir + f"/results-{'s2' * s2only + 's1' * s1only}-pc{n_components}-k{n_clusters}.csv"), "w") as f:
         for line in lines:
             print(line)
             f.write(line + "\n")
