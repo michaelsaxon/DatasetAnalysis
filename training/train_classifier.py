@@ -148,12 +148,12 @@ def load_counterfact_nli_data(basepath, partition, label_id = True):
     fname = PurePath(basepath + f"/counterfactually-augmented-data/NLI/all_combined/{partition}.tsv")
     lines = open(fname, "r").readlines()[1:]
     sents = []
-    for line in tqdm(lines):
+    for j, line in tqdm(enumerate(lines)):
         line = line.strip().split("\t")
         label = line[2]
         if label_id:
             label = LABEL_IDS.get(label, LABEL_IDS["neutral"])
-        sents.append((line[0], line[1], label))
+        sents.append((line[0], line[1], label, j))
     return sents
 
 
