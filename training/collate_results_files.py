@@ -44,13 +44,12 @@ def collate(dataset, ld = True, part = 's2'):
 # ld s2only
 folders = 'A1 A2 A3 AA CF MB MdbA MU SdbA SICK S X'.split(" ")
 for dataset in folders:
-    collate(dataset, part='s1')
-
+    collate(dataset)
 
 # ld s1only
 folders = 'CF F MdbA SdbA'.split(" ")
 for dataset in folders:
-    collate(dataset)
+    collate(dataset, part='s1')
 
 # s2only
 folders = ['OC']
