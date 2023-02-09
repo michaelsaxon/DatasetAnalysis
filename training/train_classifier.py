@@ -133,14 +133,14 @@ def load_sick_data(basepath, label_id = True):
         lines = f.readlines()[1:]
     # keys will be TRAIN TRIAL TEST
     lines_sorted = defaultdict(list)
-    for line in lines:
+    for j, line in enumerate(lines):
         line = line.strip().split("\t")
         partition = line[-1]
         sentence_a = line[1]
         sentence_b = line[2]
         # labels are allcaps vers of others
         label = LABEL_IDS.get(line[3].lower(), LABEL_IDS["neutral"])
-        lines_sorted[partition].append((sentence_a, sentence_b, label))
+        lines_sorted[partition].append((sentence_a, sentence_b, label, j))
     return lines_sorted["TRAIN"], lines_sorted["TRIAL"], lines_sorted["TEST"]
 
 
