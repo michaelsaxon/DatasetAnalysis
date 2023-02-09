@@ -25,16 +25,18 @@ def single_set(fname):
 
 
 def collate(dataset, ld = True, part = 's2'):
+    dir_settings = get_write_settings(["intermed_comp_dir_base"])
+    cd_base = dir_settings["intermed_comp_dir_base"]
     outs = []
     for k in [10, 25]:
         for pc in [0, 50, 100]:
-            set = single_set(f"{ld * 'ld-'}{dataset}-test/results-{part}-pc{pc}-k{k}.csv")
+            set = single_set(f"{cd_base}/{ld * 'ld-'}{dataset}-test/results-{part}-pc{pc}-k{k}.csv")
             outs += set
     print(f"{dataset} & {part} & {' & '.join(outs)}")
     outs = []
     for k in [50, 100]:
         for pc in [0, 50, 100]:
-            set = single_set(f"{ld * 'ld-'}{dataset}-test/results-{part}-pc{pc}-k{k}.csv")
+            set = single_set(f"{cd_base}/{ld * 'ld-'}{dataset}-test/results-{part}-pc{pc}-k{k}.csv")
             outs += set
     print(f"{dataset} & {part} & {' & '.join(outs)}")
 
