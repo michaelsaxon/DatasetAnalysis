@@ -361,10 +361,10 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2, thr
 def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_clusters, n_components, lastdense, tsne_thresh, tsne, skip_pca):
     dir_settings = get_write_settings(["dataset_dir", "intermed_comp_dir_base", "model_ckpts_path"])
 
-    if n_clusters == 0:
+    if n_components == 0:
         skip_pca = True
     if skip_pca:
-        n_clusters = 0
+        n_components = 0
 
     model_id, pretrained_path = read_models_csv(dataset, pretrained_path_base=dir_settings["model_ckpts_path"])
     model, tokenizer = choose_load_model_tokenizer(model_id, dataset)
