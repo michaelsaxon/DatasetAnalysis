@@ -282,7 +282,7 @@ class plNLIDataModule(pl.LightningDataModule):
     def __init__(self, tokenizer, basepath, dataset, batch_size, bias, bias_factor = 1, s2only = False, s1only = False):
         super().__init__()
         self.tokenizer = tokenizer
-        self.basepath = basepath
+        self.basepath = basepath + "/"
         self.dataset = dataset
         self.batch_size = batch_size
         self.bias = bias
