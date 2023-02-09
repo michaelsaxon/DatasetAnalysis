@@ -101,6 +101,7 @@ def collect_embeddings(nli_dataset, ltmodel, partition="test"):
 # run the ltmodel to get the posteriors
 def collect_last_dense(embs_labs_set_iterator, ltmodel):
     for batch_embs, batch_labs in embs_labs_set_iterator:
+        print(ltmodel.model.state_dict().keys())
         batch_embs = ltmodel.model.classifier.dense(batch_embs)
         batch_embs = batch_embs.squeeze()
         yield batch_embs, batch_labs
@@ -321,7 +322,7 @@ def greedy_cluster_meanings_comparison(cluster_vectors_1, cluster_vectors_2, thr
         i = 0
         num_gtt1 = 0
         num_gtt2 = 0
-        print(np.max(cosine_sims))
+        print(np.max(1osine_sims))
         while count_above(cosine_sims, -1) > 0:
             # find the max elem
             max_idx = np.unravel_index(np.argmax(cosine_sims), cosine_sims.shape)

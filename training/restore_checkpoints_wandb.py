@@ -19,7 +19,6 @@ def main(name):
 
     api = wandb.Api()
 
-
     if name != "":
         download_file_to(api, dir_settings["model_ckpts_path"], name)
     else:
