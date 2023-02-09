@@ -109,6 +109,7 @@ def collect_last_dense(embs_labs_set_iterator, ltmodel):
         else:
             batch_embs = ltmodel.model.classifier(batch_embs)
         batch_embs = batch_embs.squeeze()
+        print(batch_embs.shape)
         yield batch_embs, batch_labs
 
 # utility fn to convert collected embedding batches into 
