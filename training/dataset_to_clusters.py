@@ -398,7 +398,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     # pca transformed embeddings
     if not skip_pca:
         embs_pca = pca_fit_transform(embs, n_components=n_components, tmp_save_dir=intermed_comp_dir)
-        pca_affix = "-pca{n_components}"
+        pca_affix = f"-pca{n_components}"
     else:
         embs_pca = embs
         pca_affix = ""
