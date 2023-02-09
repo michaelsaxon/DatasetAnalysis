@@ -105,9 +105,8 @@ def collect_last_dense(embs_labs_set_iterator, ltmodel):
         #print(ltmodel.model.state_dict().keys())
         if ltmodel.model is BertForSequenceClassification: 
             batch_embs = ltmodel.model.classifier.dense(batch_embs)
-            print(batch_embs.shape)
         else:
-            batch_embs = ltmodel.model.classifier(batch_embs)
+            batch_embs = ltmodel.model.classifier.weight(batch_embs)
         batch_embs = batch_embs.squeeze()
         print(batch_embs.shape)
         yield batch_embs, batch_labs
