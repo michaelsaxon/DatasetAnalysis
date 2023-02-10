@@ -434,6 +434,8 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
     if tsne:
         fig = plot_outliers(embs_pca, labs, embs_cll, clusters_xHs, tmp_save_dir=intermed_comp_dir, threshold=tsne_thresh)
         fig.savefig("test.png")
+
+    print(global_dist)
     print("##### HIGHEST BIAS ClUSTERS #####")
     max_bias_clusters = sorted(clusters_L2, reverse=True)
     for i in range(5):
