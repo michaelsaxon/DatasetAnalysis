@@ -23,12 +23,11 @@ def single_set(fname):
     lines = open(fname,"r").readlines()
     line = list(map(lambda x: float(x), lines[1].strip().split(",")))
     line = [f"{line[0]*100:.1f}", f"{line[1]:.3f}"]
-    return lines[1].split(",")[0:2]
+    return line
 
 def print_files(cd_base, ld, dataset, part, pcs = [0, 50, 100], ks = [10, 25]):
     outs = []
     for k in ks:
-      
         for pc in pcs:
             set = single_set(f"{cd_base}/{ld * 'ld-'}{dataset}-test/results-{part}-pc{pc}-k{k}.csv")
             outs += set
