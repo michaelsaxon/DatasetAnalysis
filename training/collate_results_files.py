@@ -21,24 +21,25 @@ import matplotlib.pyplot as plt
 
 def single_set(fname):
     lines = open(fname,"r").readlines()
+    line = list(map(lambda x: float(x), lines[1].strip().split(",")))
+    line = [f"{line[0]*100:.1f}", f"{line[1]:.3f}"]
     return lines[1].split(",")[0:2]
+
+def print_files(cd_base, ld, dataset, part, pcs = [0, 50, 100], ks = [10, 25]):
+    outs = []
+    for k in ks:
+      
+        for pc in pcs:
+            set = single_set(f"{cd_base}/{ld * 'ld-'}{dataset}-test/results-{part}-pc{pc}-k{k}.csv")
+            outs += set
+    print(f"{dataset} & {part} & {' & '.join(outs)} \\\\")
 
 
 def collate(dataset, ld = True, part = 's2'):
     dir_settings = get_write_settings(["intermed_comp_dir_base"])
     cd_base = dir_settings["intermed_comp_dir_base"]
-    outs = []
-    for k in [10, 25]:
-        for pc in [0, 50, 100]:
-            set = single_set(f"{cd_base}/{ld * 'ld-'}{dataset}-test/results-{part}-pc{pc}-k{k}.csv")
-            outs += set
-    print(f"{dataset} & {part} & {' & '.join(outs)}")
-    outs = []
-    for k in [50, 100]:
-        for pc in [0, 50, 100]:
-            set = single_set(f"{cd_base}/{ld * 'ld-'}{dataset}-test/results-{part}-pc{pc}-k{k}.csv")
-            outs += set
-    print(f"{dataset} & {part} & {' & '.join(outs)}")
+    print_files(cd_base, ld, dataset, part)
+    print_files(cd_base, ld, dataset, part, ks = [50, 100])
 
 
 # ld s2only
