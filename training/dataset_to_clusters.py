@@ -435,7 +435,16 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
         fig = plot_outliers(embs_pca, labs, embs_cll, clusters_xHs, tmp_save_dir=intermed_comp_dir, threshold=tsne_thresh)
         fig.savefig("test.png")
     print("##### HIGHEST BIAS ClUSTERS #####")
-    print(clusters_L2)
+    max_bias_clusters = sorted(clusters_L2, reverse=True)
+    for i in range(5):
+        bias_cluster = clusters_L2.index(max_bias_clusters[i])
+        print(f"#{i} bias cluster : {bias_cluster}")
+        print("distribution:")
+        print(cluster_dists[i])
+        idces = list(np.arange(embs_cll.shape[0])[embs_cll == bias_cluster])
+        with open(f"{intermed_comp_dir}/{i}-idces.csv","w") as f:
+            f.writelines(map(lambda x: str(x) + "\n", idces))
+        
     # print the number 1
 
 
