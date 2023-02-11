@@ -119,8 +119,8 @@ def regions_plot(x, y, marker, xscale, yscale, xlabel, ylabel):
 
 
 csv= pd.read_csv("clusterbias_results.csv")
-regions_plot(csv["BC"].to_numpy(), csv["R"].to_numpy(), list(csv["marker"]), [30,90], [30,100], "Biased condition accuracy", "Replication accuracy")
+regions_plot(csv["BC"].to_numpy(), csv["R"].to_numpy(), list(csv["marker"]), [30,90], [30,100], "SSC Accuracy", "PSC accuracy")
 #bivariate(csv["SOTA"].to_numpy(), csv["R"].to_numpy(), [40,100], [40,100], "SOTA Accuracy", "Replication accuracy", trend_bg_color="#F5CCF5", point_color="#280028", yeqx = True)
-bivariate(csv["PECOxH"].to_numpy()*100, csv["%RR"].to_numpy(), [0,22], [0,100], "PECO score", "Bias recovery BCAcc / RAcc)", trend_bg_color="#E5E5FF", point_color="#000055")
-#bivariate(csv["TRNBA"].to_numpy(), csv["BC"].to_numpy(), [20,90], [20,90], "Replication-Biased token sig. agreement", "Biased conditon accuracy", trend_bg_color="#ffdead", point_color="#cb410b")
-#bivariate(csv["RBA"].to_numpy(), csv["%RR"].to_numpy(), [20,90], [0,100], "Replication-Biased output agreement", "Bias recovery (BCAcc / RAcc)")
+bivariate(csv["PECOxH"].to_numpy()*100, csv["%RR"].to_numpy(), [0,22], [0,100], "PECO score", "$\%R_R$", trend_bg_color="#E5E5FF", point_color="#000055")
+bivariate(csv["TRNBA"].to_numpy(), csv["BC"].to_numpy(), [20,90], [20,90], "Replication-Biased token sig. agreement", "SSC accuracy", trend_bg_color="#ffdead", point_color="#cb410b")
+bivariate(csv["RBA"].to_numpy(), csv["%RR"].to_numpy(), [20,90], [0,100], "SSC-PSC Output Agreement (NBA)", "$\%R_R$")

@@ -57,7 +57,8 @@ def hist_by_L2_bin(df):
     sns.histplot(df[df["outlier"] == False], x="mus", element="step", multiple="stack", ax = axs[1], bins=50, binrange=(0,1), hue="labels", color="blue")
     axs[0].legend(loc="upper left")
     axs[1].legend(loc="upper left")
-    fig.savefig("histogram_cartography.png")
+    axs[1].set_xlabel("Confidence")
+    fig.savefig("histogram_cartography.pdf")
     print(f'Outliers: {df[df["outlier"] == True]["mus"].mean()}')
     print(f'Outliers: {df[df["outlier"] == False]["mus"].mean()}')
 
