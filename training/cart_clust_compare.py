@@ -53,10 +53,11 @@ def cluster_values_to_dists(embs_cll, values, n_clusters):
 
 def hist_by_L2_bin(df):
     fig, axs = plt.subplots(2, 1)
-    sns.histplot(df[df["outlier"] == True], x="mus", element="step", multiple="stack", ax = axs[0], bins=50, binrange=(0,1), color="red")
-    sns.histplot(df[df["outlier"] == False], x="mus", element="step", multiple="stack", ax = axs[1], bins=50, binrange=(0,1), color="grey")
+    sns.histplot(df[df["outlier"] == True], x="mus", element="step", multiple="stack", ax = axs[0], bins=50, binrange=(0,1), color="red", legend=False)
+    sns.histplot(df[df["outlier"] == False], x="mus", element="step", multiple="stack", ax = axs[1], bins=50, binrange=(0,1), color="grey", legend=False)
     axs[0].legend(loc="upper left")
     axs[1].legend(loc="upper left")
+    axs[0].text(0.1, 1000, "'Biased' clusters", color="red")
     axs[1].set_xlabel("Confidence")
     fig.savefig("histogram_cartography.pdf")
     print(f'Outliers: {df[df["outlier"] == True]["mus"].mean()}')
