@@ -57,7 +57,7 @@ def hist_by_L2_bin(df):
     sns.histplot(df[df["outlier"] == False], x="mus", element="step", multiple="stack", ax = axs[1], bins=50, binrange=(0,1), color="grey", legend=False)
     axs[0].legend(loc="upper left")
     axs[1].legend(loc="upper left")
-    axs[0].text(0.1, 1000, "'Biased' clusters", color="red")
+    axs[0].text(0.1, 1000, "'Biased' clusters")
     axs[1].set_xlabel("Confidence")
     fig.savefig("histogram_cartography.pdf")
     print(f'Outliers: {df[df["outlier"] == True]["mus"].mean()}')
