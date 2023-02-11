@@ -25,13 +25,22 @@ def single_set(fname):
     line = [f"{line[0]*100:.1f}", f"{line[1]:.3f}"]
     return line
 
-def print_files(cd_base, ld, dataset, part, pcs = [0, 50, 100], ks = [10, 25]):
+def print_files_latex(cd_base, ld, dataset, part, pcs = [0, 50, 100], ks = [10, 25]):
     outs = []
     for k in ks:
         for pc in pcs:
             set = single_set(f"{cd_base}/{ld * 'ld-'}{dataset}-test/results-{part}-pc{pc}-k{k}.csv")
             outs += set
     print(f"{dataset} & {part} & {' & '.join(outs)} \\\\")
+
+
+def print_files(cd_base, ld, dataset, part, pcs = [0, 50, 100], ks = [10, 25]):
+    for k in ks:
+        outs = []
+        for pc in pcs:
+            set = single_set(f"{cd_base}/{ld * 'ld-'}{dataset}-test/results-{part}-pc{pc}-k{k}.csv")
+            outs += set
+        print(f"{dataset},{k},{','.join(outs)}")
 
 
 def collate(dataset, ld = True, part = 's2'):
