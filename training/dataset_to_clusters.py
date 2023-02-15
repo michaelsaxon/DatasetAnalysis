@@ -86,6 +86,8 @@ def cuda_dict(tensor_dict):
 ## implement each step in the eval, pca, cluster pipeline
 # run the ltmodel to get the embeddings
 def collect_embeddings(nli_dataset, ltmodel, partition="test"):
+    if nli_dataset is None or ltmodel is None:
+        raise Exception("You are trying to get embeddings without a model or dataset. Are you trying to run a precomputed embeddings script without precomputing?")
     # maybe cuda if we want
     print("Collecting embeddings...")
     if partition == "test":
@@ -137,7 +139,7 @@ def label_lists_to_arrays(label_lists):
     return X_list, labels
 
 # this is a bundle of the two prev functions to interface with auto caching
-def get_numpy_embs(nli_data, ltmodel, tmp_save_dir = None, lastdense = False, partition = "test", affix=""):
+def get_numpy_embs(nli_data = None, ltmodel = None, tmp_save_dir = None, lastdense = False, partition = "test", affix=""):
     if tmp_save_dir == None:
         if lastdense:
             embs_labs_set_iterator = collect_last_dense(collect_embeddings(nli_data, ltmodel, partition), ltmodel)
@@ -433,7 +435,7 @@ def main(skip_gpu, dataset, biased, batch_size, extreme_bias, s1only, s2only, n_
             f.write(line + "\n")
     if tsne:
         fig = plot_outliers(embs_pca, labs, embs_cll, clusters_xHs, tmp_save_dir=intermed_comp_dir, threshold=tsne_thresh)
-        fig.savefig("test.pdf")
+        fig.savefig(f"{intermed_comp_dir}/test.pdf")
 
     print(global_dist)
     print("##### HIGHEST BIAS ClUSTERS #####")
