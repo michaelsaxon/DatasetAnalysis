@@ -50,8 +50,7 @@ def tsne_csv(embs, tmp_save_dir, perp=30, threshold=2.5):
 @click.option('--lastdense', is_flag=True)
 @click.option('--n_clusters', default=50)
 @click.option('--n_components', default=50)
-@click.option('--tsne_thresh', default=2.5)
-def main(dataset, s1only, s2only, n_clusters, n_components, lastdense, tsne_thresh, tsne):
+def main(dataset, s1only, s2only, n_clusters, n_components, lastdense):
     dir_settings = get_write_settings(["dataset_dir", "intermed_comp_dir_base", "model_ckpts_path"])
 
     skip_pca = n_components == 0
