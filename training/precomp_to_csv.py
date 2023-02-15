@@ -36,29 +36,9 @@ import matplotlib.pyplot as plt
 from dataset_to_clusters import *
 
 
-def tsne_csv(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=30, threshold=2.5):
+def tsne_csv(embs, tmp_save_dir, perp=30, threshold=2.5):
     embs_tsne = tsne_fit_transform(embs, perp, tmp_save_dir)
-    under_thresh = defaultdict(list)
-    above_thresh = defaultdict(list)
-    for i in range(embs.shape[0]):
-        if cluster_norms[cluster_ids[i]] > threshold:
-            above_thresh[labels[i]].append(embs_tsne[i,:])
-        else:
-            under_thresh[labels[i]].append(embs_tsne[i,:])
-    # entailment:0, contradict:1, neutral:2
-
-    fig, ax = plt.subplots(figsize=(4,4))
-    colors = ['blue', 'orange', 'black']
-    for i in range(3):
-        above_thresh[i] = np.stack(above_thresh[i])
-        under_thresh[i] = np.stack(under_thresh[i])
-        print(above_thresh[i].shape)
-        print(under_thresh[i].shape)
-        ax.scatter(above_thresh[i][:,0], above_thresh[i][:,1],
-        c = colors[i], marker="x", alpha=0.4)
-        ax.scatter(under_thresh[i][:,0], under_thresh[i][:,1],
-        c = colors[i], marker="x", s=1, alpha=0.4)
-    return fig
+    return embs_tsne
 
 
 # should clean out biased vs """""extreme_bias""""""" and make function clearer. 
@@ -71,7 +51,6 @@ def tsne_csv(embs, labels, cluster_ids, cluster_norms, tmp_save_dir, perp=30, th
 @click.option('--n_clusters', default=50)
 @click.option('--n_components', default=50)
 @click.option('--tsne_thresh', default=2.5)
-@click.option('--tsne', is_flag=True)
 def main(dataset, s1only, s2only, n_clusters, n_components, lastdense, tsne_thresh, tsne):
     dir_settings = get_write_settings(["dataset_dir", "intermed_comp_dir_base", "model_ckpts_path"])
 
@@ -100,38 +79,19 @@ def main(dataset, s1only, s2only, n_clusters, n_components, lastdense, tsne_thre
     ## evaluate the PECO measure
     # get the cluster cross entropies
     cluster_dists, global_dist = cluster_preds_to_dists(embs_cll, labs, n_clusters = n_clusters)
-    clusters_xHs = cluster_xH(cluster_dists, global_dist)
-    clusters_L2 = cluster_L2(cluster_dists, global_dist)
-    peco_xH = peco_score(clusters_xHs, scale = 5)
-    peco_L2 = peco_score(clusters_L2)
-    threshscore_xH_25 = threshold_score(clusters_xHs, .25 * 10)
-    threshscore_L2_25 = threshold_score(clusters_L2, .25)
-    # generate AUC plots
-    # generate T-SNE plot
-    print("##### REPORT #####")
-    lines = ["peco_xH,peco_L2,thresh_xH_25,thresh_L2_25", 
-        f"{peco_xH:.4f},{peco_L2:.4f},{threshscore_xH_25:.4f},{threshscore_L2_25:.4f}"]
-    with open(PurePath(intermed_comp_dir + f"/results-{'s2' * s2only + 's1' * s1only}-pc{n_components}-k{n_clusters}.csv"), "w") as f:
-        for line in lines:
-            print(line)
-            f.write(line + "\n")
-    if tsne:
-        fig = plot_outliers(embs_pca, labs, embs_cll, clusters_xHs, tmp_save_dir=intermed_comp_dir, threshold=tsne_thresh)
-        fig.savefig(f"{intermed_comp_dir}/test.pdf")
 
-    print(global_dist)
-    print("##### HIGHEST BIAS ClUSTERS #####")
-    max_bias_clusters = sorted(clusters_L2, reverse=True)
-    for i in range(5):
-        bias_cluster = np.where(clusters_L2 == max_bias_clusters[i])[0][0]
-        print(f"#{i} bias cluster : {bias_cluster}, {max_bias_clusters[i]}")
-        print("distribution:")
-        print(cluster_dists[i])
-        idces = list(np.arange(embs_cll.shape[0])[embs_cll == bias_cluster])
-        with open(f"{intermed_comp_dir}/{i}-idces.csv","w") as f:
-            f.writelines(map(lambda x: str(x) + "\n", idces))
-        
-    # print the number 1
+    clusters_L2 = cluster_L2(cluster_dists, global_dist)
+    peco_L2 = peco_score(clusters_L2)
+
+    tsne_coords = tsne_fit_transform(embs, 30, intermed_comp_dir)
+
+    print(clusters_L2.shape)
+    print(peco_L2.shape)
+    print(tsne_coords.shape)
+    print(labs.shape)
+    print(embs_cll.shape)
+
+
 
 
 if __name__ == "__main__":
