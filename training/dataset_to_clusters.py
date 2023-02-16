@@ -111,10 +111,9 @@ def collect_last_dense(embs_labs_set_iterator, ltmodel):
         yield batch_embs, batch_labs
 
 
-def replicate_label_group_shuffle_from_strings(stringslist, labels, keys=[0,1,2]):
+def replicate_label_group_shuffle_from_strings(instrings, labels, keys=[0,1,2]):
     stringslist = defaultdict(list)
-    print("test")
-    for sentence, label in zip(stringslist, labels):
+    for sentence, label in zip(instrings, labels):
             print(label)
             print(sentence)
             stringslist[str(label)].append(sentence)
