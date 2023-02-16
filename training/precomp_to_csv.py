@@ -84,11 +84,15 @@ def main(dataset, s1only, s2only, n_clusters, n_components, lastdense):
 
     tsne_coords = tsne_fit_transform(embs, 30, intermed_comp_dir)
 
+    _, s2, label, _ = load_nli_data(dir_settings["dataset_dir"] + "/", dataset, "test")
+    sentences_correct_order = replicate_label_group_shuffle_from_strings(s2, label)
+    print(len(sentences))
+
     with open(f"{intermed_comp_dir}/cluster_{n_clusters}_l2.csv","w") as f:
         f.writelines(["clid,peco_l2\n"] + [f"{i},{clusters_L2[i]}\n" for i in range(clusters_L2.shape[0])])
 
     with open(f"{intermed_comp_dir}/tsne_{n_clusters}_l2.csv","w") as f:
-        f.writelines(["sid,label,clid,x,y,pecol2\n"] + [f"{i},{labs[i]},{embs_cll[i]},{tsne_coords[i,0]},{tsne_coords[i,1]},{clusters_L2[embs_cll[i]]}\n" for i in range(labs.shape[0])])
+        f.writelines(["sid,label,clid,x,y,pecol2\n"] + [f"{i},{labs[i]},{embs_cll[i]},{tsne_coords[i,0]},{tsne_coords[i,1]},{clusters_L2[embs_cll[i]]},{sentences_correct_order[i]}\n" for i in range(labs.shape[0])])
 
 
 

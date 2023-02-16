@@ -110,6 +110,16 @@ def collect_last_dense(embs_labs_set_iterator, ltmodel):
         print(batch_embs.shape)
         yield batch_embs, batch_labs
 
+
+def replicate_label_group_shuffle_from_strings(stringslist, labels, keys=[0,1,2]):
+    stringslist = defaultdict(list)
+    for sentence, label in zip(stringslist, labels):
+            stringslist[label].append(sentence)
+    outlines = []
+    for key in keys:
+        outlines += stringslist[key]
+    return outlines
+
 # utility fn to convert collected embedding batches into 
 def group_by_label(embs_labs_set_iterator):
     label_lists = defaultdict(list)

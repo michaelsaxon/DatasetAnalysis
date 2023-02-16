@@ -7,11 +7,27 @@
 
 <!--script src="https://d3js.org/d3.v7.min.js"></script-->
 
+<script>
+  const highlighted_color = "pink";
+  const default_color = "white";
+
+  function on_cluster(clid) {
+    d3.selectAll(".c" + clid).style("stroke-width", 0.5); //.attr("r",r);
+    d3.select("#row" + clid).style("background-color", highlighted_color);
+  }
+  function off_cluster(clid) {
+    d3.selectAll(".c" + clid).style("stroke-width", 0); //.attr("r",r);
+    d3.select("#row" + clid).style("background-color", default_color);
+  }
+
+</script>
+
+
 <script type="module">
 // set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 30, left: 60},
-    width = 460 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+var margin = {top: 5, right: 5, bottom: 5, left: 5},
+    width = 800 - margin.left - margin.right,
+    height = 800 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 var svg = d3.select("#my_dataviz")
@@ -25,63 +41,55 @@ var svg = d3.select("#my_dataviz")
 
   var box = svg.append('text')                
       .attr('font-size', '30px')
-      .attr('x', 100)
-      .attr('y',100);
+      .attr('x',100)
+      .attr('y',20);
+
+
 
 
 //Read the data
-Promise.all([d3.csv("tsne_50_l2.csv"), d3.csv("cluster_50_l2.csv")])
-.then(function(data) {
-  var data1 = data[0];
-  var clusterprops = data[1];
-  data1.forEach(function (d) {
-    box.text(d);
-  })
+d3.csv("tsne_50_l2.csv", function(data) {
+  d3.shuffle(data);
 
-
-  //d3.shuffle(data);
   // Add X axis
-
   var x = d3.scaleLinear()
     .domain([-100, 100])
     .range([ 0, width ]);
-  //svg.append("g")
-  //  .attr("transform", "translate(0," + height + ")")
-  //  .call(d3.axisBottom(x));
+  //svg.append("g").attr("transform", "translate(0," + height + ")").call(d3.axisBottom(x));
 
   // Add Y axis
   var y = d3.scaleLinear()
     .domain([-100, 100])
     .range([ height, 0]);
-  //svg.append("g")
-  //  .call(d3.axisLeft(y));
+  //svg.append("g").call(d3.axisLeft(y));
 
   const colorlabel = new Map();
-  colorlabel.set('0', "tomato");
-  colorlabel.set('1', "black");
-  colorlabel.set('2', "blue");
+  colorlabel.set('1', "tomato");
+  colorlabel.set('2', "black");
+  colorlabel.set('0', "blue");
 
+  
   // Add dots
 
 
   svg.append('g')
     .selectAll("dot")
-    .data(data1)
+    .data(data)
     .enter()
     .append("circle")
       .attr("cx", function (d) { return x(d.x); } )
       .attr("cy", function (d) { return y(d.y); } )
-      .attr("r", 1.5)
+      .attr("r", function (d) { return 0.5*(Math.log(parseFloat(d.pecol2)) + 12); })
       .attr("class", function (d) { return "c" + d.clid})
       .style("fill", function (d) { return colorlabel.get(d.label); })
-      .style("stroke", "black")
+      .style("stroke", function (d) { return colorlabel.get(d.label); })
       .style("stroke-width", 0)
-      .attr('fill-opacity', 0.2).on("mouseover", function(d) {
+      .attr('fill-opacity', 0.1).on("mouseover", function(d) {
+        on_cluster(d.clid);
         box.text(d.clid);
-        d3.selectAll(".c" + d.clid).style("fill-opacity", 0.9).style("stroke-width", 0.5).style("r",6);
       })                  
       .on("mouseout", function(d) {
-        d3.selectAll(".c" + d.clid).style("fill-opacity", 0.2).style("stroke-width", 0).style("r",1.5);
+        off_cluster(d.clid);
       });
 
 
@@ -92,12 +100,125 @@ Promise.all([d3.csv("tsne_50_l2.csv"), d3.csv("cluster_50_l2.csv")])
 </script>
 
 
+<script type="module">
+  // set the dimensions and margins of the graph
+  var margin = {top: 5, right: 5, bottom: 5, left: 5},
+      width = 800 - margin.left - margin.right,
+      height = 200 - margin.top - margin.bottom;
+  
+function WordCloud(text, {
+  size = group => group.length, // Given a grouping of words, returns the size factor for that word
+  word = d => d, // Given an item of the data array, returns the word
+  marginTop = 0, // top margin, in pixels
+  marginRight = 0, // right margin, in pixels
+  marginBottom = 0, // bottom margin, in pixels
+  marginLeft = 0, // left margin, in pixels
+  width = 640, // outer width, in pixels
+  height = 400, // outer height, in pixels
+  maxWords = 250, // maximum number of words to extract from the text
+  fontFamily = "sans-serif", // font family
+  fontScale = 15, // base font size
+  padding = 0, // amount of padding between the words (in pixels)
+  rotate = 0, // a constant or function to rotate the words
+  invalidation // when this promise resolves, stop the simulation
+} = {}) {
+  const words = typeof text === "string" ? text.split(/\W+/g) : Array.from(text);
+  
+  const data = d3.rollups(words, size, w => w)
+    .sort(([, a], [, b]) => d3.descending(a, b))
+    .slice(0, maxWords)
+    .map(([key, size]) => ({text: word(key), size}));
+  
+  const svg = d3.create("svg")
+      .attr("viewBox", [0, 0, width, height])
+      .attr("width", width)
+      .attr("font-family", fontFamily)
+      .attr("text-anchor", "middle")
+      .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
+
+  const g = svg.append("g").attr("transform", `translate(${marginLeft},${marginTop})`);
+
+  const cloud = d3Cloud()
+      .size([width - marginLeft - marginRight, height - marginTop - marginBottom])
+      .words(data)
+      .padding(padding)
+      .rotate(rotate)
+      .font(fontFamily)
+      .fontSize(d => Math.sqrt(d.size) * fontScale)
+      .on("word", ({size, x, y, rotate, text}) => {
+        g.append("text")
+            .attr("font-size", size)
+            .attr("transform", `translate(${x},${y}) rotate(${rotate})`)
+            .text(text);
+      });
+
+  cloud.start();
+  invalidation && invalidation.then(() => cloud.stop());
+  return svg.node();
+}    
+    
+  
+  </script>
+  
+
+
 
 <body>
 
 <!-- Create a div where the graph will take place -->
-<div id="my_dataviz"></div>
-
+<div id="my_dataviz" style="position:relative; float:left;"></div>
+<table style="text-align: right; font-family: 'Courier New', Courier, monospace;">
+  <tr><td>Cluster ID</td><td>&nbsp;&nbsp;&nbsp;PECO L2</td></tr>
+  <tr id="row20" onmouseover="on_cluster(20);" onmouseleave="off_cluster(20);"><td>20</td><td>40.9</td></tr>
+  <tr id="row6" onmouseover="on_cluster(6);" onmouseleave="off_cluster(6);"><td>6</td><td>40.8</td></tr>
+  <tr id="row25" onmouseover="on_cluster(25);" onmouseleave="off_cluster(25);"><td>25</td><td>40.5</td></tr>
+  <tr id="row35" onmouseover="on_cluster(35);" onmouseleave="off_cluster(35);"><td>35</td><td>30.2</td></tr>
+  <tr id="row47" onmouseover="on_cluster(47);" onmouseleave="off_cluster(47);"><td>47</td><td>29.5</td></tr>
+  <tr id="row23" onmouseover="on_cluster(23);" onmouseleave="off_cluster(23);"><td>23</td><td>27.7</td></tr>
+  <tr id="row38" onmouseover="on_cluster(38);" onmouseleave="off_cluster(38);"><td>38</td><td>24.7</td></tr>
+  <tr id="row43" onmouseover="on_cluster(43);" onmouseleave="off_cluster(43);"><td>43</td><td>23.0</td></tr>
+  <tr id="row16" onmouseover="on_cluster(16);" onmouseleave="off_cluster(16);"><td>16</td><td>20.2</td></tr>
+  <tr id="row15" onmouseover="on_cluster(15);" onmouseleave="off_cluster(15);"><td>15</td><td>19.3</td></tr>
+  <tr id="row8" onmouseover="on_cluster(8);" onmouseleave="off_cluster(8);"><td>8</td><td>18.7</td></tr>
+  <tr id="row34" onmouseover="on_cluster(34);" onmouseleave="off_cluster(34);"><td>34</td><td>16.5</td></tr>
+  <tr id="row3" onmouseover="on_cluster(3);" onmouseleave="off_cluster(3);"><td>3</td><td>13.3</td></tr>
+  <tr id="row4" onmouseover="on_cluster(4);" onmouseleave="off_cluster(4);"><td>4</td><td>12.3</td></tr>
+  <tr id="row28" onmouseover="on_cluster(28);" onmouseleave="off_cluster(28);"><td>28</td><td>11.9</td></tr>
+  <tr id="row0" onmouseover="on_cluster(0);" onmouseleave="off_cluster(0);"><td>0</td><td>11.7</td></tr>
+  <tr id="row22" onmouseover="on_cluster(22);" onmouseleave="off_cluster(22);"><td>22</td><td>11.5</td></tr>
+  <tr id="row45" onmouseover="on_cluster(45);" onmouseleave="off_cluster(45);"><td>45</td><td>11.4</td></tr>
+  <tr id="row10" onmouseover="on_cluster(10);" onmouseleave="off_cluster(10);"><td>10</td><td>10.9</td></tr>
+  <tr id="row33" onmouseover="on_cluster(33);" onmouseleave="off_cluster(33);"><td>33</td><td>10.6</td></tr>
+  <tr id="row37" onmouseover="on_cluster(37);" onmouseleave="off_cluster(37);"><td>37</td><td>9.8</td></tr>
+  <tr id="row40" onmouseover="on_cluster(40);" onmouseleave="off_cluster(40);"><td>40</td><td>9.7</td></tr>
+  <tr id="row30" onmouseover="on_cluster(30);" onmouseleave="off_cluster(30);"><td>30</td><td>8.6</td></tr>
+  <tr id="row13" onmouseover="on_cluster(13);" onmouseleave="off_cluster(13);"><td>13</td><td>7.4</td></tr>
+  <tr id="row18" onmouseover="on_cluster(18);" onmouseleave="off_cluster(18);"><td>18</td><td>7.3</td></tr>
+  <tr id="row17" onmouseover="on_cluster(17);" onmouseleave="off_cluster(17);"><td>17</td><td>6.4</td></tr>
+  <tr id="row5" onmouseover="on_cluster(5);" onmouseleave="off_cluster(5);"><td>5</td><td>6.2</td></tr>
+  <tr id="row14" onmouseover="on_cluster(14);" onmouseleave="off_cluster(14);"><td>14</td><td>5.7</td></tr>
+  <tr id="row32" onmouseover="on_cluster(32);" onmouseleave="off_cluster(32);"><td>32</td><td>5.5</td></tr>
+  <tr id="row41" onmouseover="on_cluster(41);" onmouseleave="off_cluster(41);"><td>41</td><td>5.1</td></tr>
+  <tr id="row46" onmouseover="on_cluster(46);" onmouseleave="off_cluster(46);"><td>46</td><td>4.6</td></tr>
+  <tr id="row24" onmouseover="on_cluster(24);" onmouseleave="off_cluster(24);"><td>24</td><td>4.5</td></tr>
+  <tr id="row19" onmouseover="on_cluster(19);" onmouseleave="off_cluster(19);"><td>19</td><td>4.3</td></tr>
+  <tr id="row1" onmouseover="on_cluster(1);" onmouseleave="off_cluster(1);"><td>1</td><td>3.6</td></tr>
+  <tr id="row49" onmouseover="on_cluster(49);" onmouseleave="off_cluster(49);"><td>49</td><td>3.6</td></tr>
+  <tr id="row48" onmouseover="on_cluster(48);" onmouseleave="off_cluster(48);"><td>48</td><td>3.5</td></tr>
+  <tr id="row2" onmouseover="on_cluster(2);" onmouseleave="off_cluster(2);"><td>2</td><td>3.3</td></tr>
+  <tr id="row27" onmouseover="on_cluster(27);" onmouseleave="off_cluster(27);"><td>27</td><td>2.9</td></tr>
+  <tr id="row29" onmouseover="on_cluster(29);" onmouseleave="off_cluster(29);"><td>29</td><td>2.4</td></tr>
+  <tr id="row21" onmouseover="on_cluster(21);" onmouseleave="off_cluster(21);"><td>21</td><td>2.2</td></tr>
+  <tr id="row31" onmouseover="on_cluster(31);" onmouseleave="off_cluster(31);"><td>31</td><td>2.2</td></tr>
+  <tr id="row11" onmouseover="on_cluster(11);" onmouseleave="off_cluster(11);"><td>11</td><td>2.2</td></tr>
+  <tr id="row7" onmouseover="on_cluster(7);" onmouseleave="off_cluster(7);"><td>7</td><td>1.7</td></tr>
+  <tr id="row36" onmouseover="on_cluster(36);" onmouseleave="off_cluster(36);"><td>36</td><td>1.6</td></tr>
+  <tr id="row9" onmouseover="on_cluster(9);" onmouseleave="off_cluster(9);"><td>9</td><td>1.5</td></tr>
+  <tr id="row42" onmouseover="on_cluster(42);" onmouseleave="off_cluster(42);"><td>42</td><td>1.4</td></tr>
+  <tr id="row39" onmouseover="on_cluster(39);" onmouseleave="off_cluster(39);"><td>39</td><td>0.6</td></tr>
+  <tr id="row12" onmouseover="on_cluster(12);" onmouseleave="off_cluster(12);"><td>12</td><td>0.5</td></tr>
+  <tr id="row44" onmouseover="on_cluster(44);" onmouseleave="off_cluster(44);"><td>44</td><td>0.3</td></tr>
+  <tr id="row26" onmouseover="on_cluster(26);" onmouseleave="off_cluster(26);"><td>26</td><td>0.2</td></tr>
 </body>
 
 </html>
