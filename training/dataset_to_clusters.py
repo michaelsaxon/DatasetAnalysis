@@ -114,7 +114,7 @@ def collect_last_dense(embs_labs_set_iterator, ltmodel):
 def replicate_label_group_shuffle_from_strings(stringslist, labels, keys=[0,1,2]):
     stringslist = defaultdict(list)
     for sentence, label in zip(stringslist, labels):
-            stringslist[label].append(sentence)
+            stringslist[str(label)].append(sentence)
     outlines = []
     for key in keys:
         outlines += stringslist[key]
