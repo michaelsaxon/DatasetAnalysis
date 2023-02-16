@@ -88,7 +88,7 @@ def main(dataset, s1only, s2only, n_clusters, n_components, lastdense):
         f.writelines(["clid,peco_l2\n"] + [f"{i},{clusters_L2[i]}\n" for i in range(clusters_L2.shape[0])])
 
     with open(f"{intermed_comp_dir}/tsne_{n_clusters}_l2.csv","w") as f:
-        f.writelines(["sid,label,clid,x,y\n"] + [f"{i},{labs[i]},{embs_cll[i]},{tsne_coords[i,0]},{tsne_coords[i,1]}\n" for i in range(labs.shape[0])])
+        f.writelines(["sid,label,clid,x,y,pecol2\n"] + [f"{i},{labs[i]},{embs_cll[i]},{tsne_coords[i,0]},{tsne_coords[i,1]},{clusters_L2[embs_cll[i]]}\n" for i in range(labs.shape[0])])
 
 
 
