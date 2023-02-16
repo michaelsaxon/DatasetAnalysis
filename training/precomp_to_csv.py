@@ -84,7 +84,7 @@ def main(dataset, s1only, s2only, n_clusters, n_components, lastdense):
 
     tsne_coords = tsne_fit_transform(embs, 30, intermed_comp_dir)
 
-    _, s2, label, _ = load_nli_data(dir_settings["dataset_dir"] + "/", dataset, "test")
+    _, s2, label, _ = zip(*load_nli_data(dir_settings["dataset_dir"] + "/", dataset, "test"))
     sentences_correct_order = replicate_label_group_shuffle_from_strings(s2, label)
     print(len(sentences))
 
